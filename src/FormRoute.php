@@ -22,7 +22,7 @@ class FormRoute {
 		});
 	}
 
-	public static function pages (&$app, &$route) {
+	public static function pages (&$app) {
 		$cacheFile = $_SERVER['DOCUMENT_ROOT'] . '/forms/cache.json';
 		if (!file_exists($cacheFile)) {
 			return;
@@ -31,6 +31,7 @@ class FormRoute {
 		if (!is_array($forms)) {
 			return;
 		}
+		return;
 	    foreach ($forms as $form) {
 	        if (isset($collection['p'])) {
 	            $app->get('/' . $collection['p'] . '(/:method(/:limit(/:skip(/:sort))))', function ($method='all', $limit=null, $skip=0, $sort=[]) use ($collection) {
