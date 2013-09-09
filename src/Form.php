@@ -1,25 +1,5 @@
 <?php
-class Form {
-	private $marker = false;
-    private $markerOverride = false;
-	public $fields = [];
-	public $fieldsByKey = [];
-	public $fieldsets = [];
-	public $tables = [];
-	public $activeRecord = [];
-	public $fieldsetTemplate = false;
-	public $errors = [];
-	public $notices = [];
-	public $showHeader = true;
-	public $documents = false;
-	public $width = 12;
-	public $widthForm = 12;
-	public $filtered = false;
-	public $sortKey = 'sort_key';
-	public $searchInclusionKey = '_id';
-    public $multipleFlag = true;
-    public $appendedId = false;
-
+trait Form {
     public function markerOverride ($marker) {
         $this->markerOverride = $marker;
     }
