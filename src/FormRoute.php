@@ -23,15 +23,15 @@ class FormRoute {
 	}
 
 	public static function pages (&$app, &$route) {
-		$cacheFile = $_SERVER['DOCUMENT_ROOT'] . '/collections/cache.json';
+		$cacheFile = $_SERVER['DOCUMENT_ROOT'] . '/forms/cache.json';
 		if (!file_exists($cacheFile)) {
 			return;
 		}
-		$collections = (array)json_decode(file_get_contents($cacheFile), true);
-		if (!is_array($collections)) {
+		$forms = (array)json_decode(file_get_contents($cacheFile), true);
+		if (!is_array($forms)) {
 			return;
 		}
-	    foreach ($collections as $collection) {
+	    foreach ($forms as $form) {
 	        if (isset($collection['p'])) {
 	            $app->get('/' . $collection['p'] . '(/:method(/:limit(/:skip(/:sort))))', function ($method='all', $limit=null, $skip=0, $sort=[]) use ($collection) {
 		            if ($limit === null) {
