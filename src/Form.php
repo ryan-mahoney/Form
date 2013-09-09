@@ -19,16 +19,10 @@ trait Form {
 	}
 
 	public function __construct() {
-		$parent = get_parent_class($this);
-		if (!in_array(trim($parent, '\\'), ['vc\pf\DOMFormTable', 'vc\pf\DOMFormTableFilter', 'vc\pf\DOMFormTableSubDocument'])) {
-			self::parseClassMethods($parent, 'Field');
-		}
 		self::parseClassMethods($this);
-		$this->errors = new \ArrayObject();
-		$this->notices = new \ArrayObject();
-		if (method_exists($this, 'excel')) {
-			$this->excel = $this->excel();
-		}
+		$this->marker = strtolower(str_replace('\\', '_', get_class($this)));
+		$this->errors = new ArrayObject();
+		$this->notices = new ArrayObject();
 	}
 
 	public function killMethod ($name) {
@@ -39,8 +33,8 @@ trait Form {
 		}
 	}
 
-	private function parseClassMethods ($object, $filter=false) {
-		$reflector = new \ReflectionClass($object);
+	public function parseClassMethods ($object, $filter=false) {
+		$reflector = new ReflectionClass($object);
 		$methods = $reflector->getMethods();
 		foreach ($methods as $method) {
 			if (substr_count((string)$method->name, 'Fieldset') > 0) {
@@ -76,23 +70,28 @@ trait Form {
 			}
 		}
 	}
+
+	public function json () {
+		$out = [];
+		foreach ($this->fields as $field) {
+            if (!isset($field['display'])) {
+            	continue;
+            }
+	        if (isset($this->activeRecord[$field['name']])) {
+            	$field['data'] = $admin->activeRecord[$field['name']];
+          	}
+            $field['marker'] = $this->marker;
+            $field['__CLASS__'] = get_class($this);
+            $method = $field['display'];
+            ob_start();
+            $method($field, $this);
+            $out[$field['name']] = ob_get_clean();
+        }
+        return json_encode($out, JSON_PRETTY_PRINT);
+	}
 	
 	public function setActiveRecord ($activeRecord) {
 		$this->activeRecord = $activeRecord;
-	}
-	
-	public static function adminAsSubDocumentTemplate () {
-		return str_replace('____', '__', ('__' . str_replace(['\\', 'Admin'], ['__', 'SubAdmin'], get_called_class())));
-	}
-
-	public function marker () {
-        if ($this->markerOverride !== false) {
-            return $this->markerOverride;
-        }
-		if ($this->marker === false) {
-			$this->marker = strtolower(str_replace('\\', '_', get_class($this)));
-		}
-		return $this->marker;
 	}
 
     public static function makeMarker ($class, $mode='') {
