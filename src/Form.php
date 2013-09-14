@@ -1,5 +1,9 @@
 <?php
 trait Form {
+	public $errors = [];
+	public $notices = [];
+	public $alerts = [];
+
     public function markerOverride ($marker) {
         $this->markerOverride = $marker;
     }
@@ -71,14 +75,17 @@ trait Form {
 		}
 	}
 
-	public function json () {
+	public function json ($id=false) {
 		$out = [];
+		if ($id !== false) {
+			FormModel::get($this, $id);
+		}
 		foreach ($this->fields as $field) {
             if (!isset($field['display'])) {
             	continue;
             }
 	        if (isset($this->activeRecord[$field['name']])) {
-            	$field['data'] = $admin->activeRecord[$field['name']];
+            	$field['data'] = $this->activeRecord[$field['name']];
           	}
             $field['marker'] = $this->marker;
             $field['__CLASS__'] = get_class($this);
@@ -86,6 +93,9 @@ trait Form {
             ob_start();
             $method($field, $this);
             $out[$field['name']] = ob_get_clean();
+        }
+        if ($id !== false) {
+        	$out['id'] = '<input type="hidden" name="' . $this->marker . '[id]" value="' . $id . '" />';
         }
         return json_encode($out, JSON_PRETTY_PRINT);
 	}
