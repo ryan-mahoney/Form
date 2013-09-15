@@ -47,7 +47,7 @@ class FormRoute {
                 		['Sep' => $form, 'a' => ['id' => $id]]
                 	])->template()->write();
                 }
-            });
+            })->name('form ' . $form);
             $app->post('/form/' . $form . '(/:id)', function ($id=false) use ($formObject) {
                 FormModel::post($formObject);
             });
