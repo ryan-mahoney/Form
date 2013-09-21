@@ -1,4 +1,6 @@
 <?php
+namespace Form;
+
 trait Form {
 	public $errors = [];
 	public $notices = [];
@@ -25,8 +27,8 @@ trait Form {
 	public function __construct() {
 		self::parseClassMethods($this);
 		$this->marker = strtolower(str_replace('\\', '_', get_class($this)));
-		$this->errors = new ArrayObject();
-		$this->notices = new ArrayObject();
+		$this->errors = new \ArrayObject();
+		$this->notices = new \ArrayObject();
 	}
 
 	public function killMethod ($name) {
@@ -38,7 +40,7 @@ trait Form {
 	}
 
 	public function parseClassMethods ($object, $filter=false) {
-		$reflector = new ReflectionClass($object);
+		$reflector = new \ReflectionClass($object);
 		$methods = $reflector->getMethods();
 		foreach ($methods as $method) {
 			if (substr_count((string)$method->name, 'Fieldset') > 0) {

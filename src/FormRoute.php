@@ -1,4 +1,7 @@
 <?php
+namespace Form;
+use Separation\Separation;
+
 class FormRoute {
 	public static function json ($app) {
 		$app->get('/json-form/:form(/:id)', function ($form, $id=false) {
@@ -41,9 +44,9 @@ class FormRoute {
 			$formObject = new $form();
 	    	$app->get('/form/' . $form . '(/:id)', function ($id=false) use ($form, $formObject) {
                 if ($id === false) {
-                	$separation = Separation::layout('form-' . $form . '.html')->template()->write();
+                	$separation = Separation::layout('form-' . $form)->template()->write();
                 } else {
-                	$separation = Separation::layout('form-' . $form . '.html')->set([
+                	$separation = Separation::layout('form-' . $form)->set([
                 		['Sep' => $form, 'a' => ['id' => $id]]
                 	])->template()->write();
                 }

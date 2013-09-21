@@ -1,4 +1,7 @@
 <?php
+namespace Form;
+use DB\Mongo;
+
 class FormModel {
 	public static function delete ($form, $id) {}
 
@@ -49,7 +52,7 @@ class FormModel {
 	
 	private static function documentSave (&$admin, &$post) {
 		if (empty($post['id'])) {
-			$post['id'] = new MongoId();
+			$post['id'] = new \MongoId();
 		}
 		if (!isset($admin->storage['collection']) || empty($admin->storage['collection'])) {
 			throw new \Exception('Can not save document: no collection specified in admin.');
@@ -58,9 +61,9 @@ class FormModel {
 			self::applyFieldTransformationIn($admin, $post, 'save');
 			//try {
 			//	self::callCallback($admin, 'documentSave', $post);
-				DB::collection($admin->storage['collection'])->
+				Mongo::collection($admin->storage['collection'])->
 					update(
-						['_id' => DB::id($post['id'])], 
+						['_id' => Mongo::id($post['id'])], 
 						['$set' => self::noKeyForUpate((array)$post)], 
 						['safe' => true, 'fsync' => true, 'upsert' => true]);
 			//	self::callCallback($admin, 'documentSaved', $post);
