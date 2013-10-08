@@ -1,4 +1,7 @@
 <?php
+use Form\Form;
+use Field\Field;
+
 class contact {
 	use Form;
 
