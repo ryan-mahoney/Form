@@ -1,11 +1,16 @@
 <?php
 namespace Form;
-use DB\Mongo;
 
 class FormModel {
+	private $db;
+
+	public function __construct ($db) {
+		$this->db = $db;
+	}
+
 	public static function delete ($form, $id) {}
 
-	public static function post ($form) {
+	public function post ($form) {
 		$id = self::documentSave($form, $_POST[$form->marker]);
 		$form->activeRecord = self::documentFindOne($form, $id);
 		self::jsonResponse($form);
@@ -61,9 +66,9 @@ class FormModel {
 			self::applyFieldTransformationIn($admin, $post, 'save');
 			//try {
 			//	self::callCallback($admin, 'documentSave', $post);
-				Mongo::collection($admin->storage['collection'])->
+				$this->db->collection($admin->storage['collection'])->
 					update(
-						['_id' => Mongo::id($post['id'])], 
+						['_id' => $this->db->id($post['id'])], 
 						['$set' => self::noKeyForUpate((array)$post)], 
 						['safe' => true, 'fsync' => true, 'upsert' => true]);
 			//	self::callCallback($admin, 'documentSaved', $post);

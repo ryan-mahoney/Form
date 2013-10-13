@@ -1,14 +1,22 @@
 <?php
 namespace Form;
-use Separation\Separation;
 
 class FormRoute {
-	public static function json ($app) {
-		$app->get('/json-form/:form(/:id)', function ($form, $id=false) {
+	private $separation;
+	private $slim;
+
+	public function __construct ($slim, $formModel, $separation) {
+		$this->slim = $slim;
+		$this->formModel = $formModel;
+		$this->separation = $separation;
+	}
+
+	public function json ($root) {
+		$this->slim->get('/json-form/:form(/:id)', function ($form, $id=false) {
 			if (isset($_GET['id']) && $id === false) {
 				$id = $_GET['id'];
 			}
-		    $class = $_SERVER['DOCUMENT_ROOT'] . '/forms/' . $form . '.php';
+		    $class = $root . '/forms/' . $form . '.php';
 		    if (!file_exists($class)) {
 		        exit ($class . ': unknown file.');
 		    }
@@ -30,8 +38,8 @@ class FormRoute {
 		});
 	}
 
-	public static function pages (&$app) {
-		$cacheFile = $_SERVER['DOCUMENT_ROOT'] . '/forms/cache.json';
+	public function pages ($root) {
+		$cacheFile = $root . '/forms/cache.json';
 		if (!file_exists($cacheFile)) {
 			return;
 		}
@@ -40,19 +48,19 @@ class FormRoute {
 			return;
 		}
 	    foreach ($forms as $form) {
-	    	require $_SERVER['DOCUMENT_ROOT'] . '/forms/' . $form . '.php';
+	    	require $root . '/forms/' . $form . '.php';
 			$formObject = new $form();
-	    	$app->get('/form/' . $form . '(/:id)', function ($id=false) use ($form, $formObject) {
+	    	$this->slim->get('/form/' . $form . '(/:id)', function ($id=false) use ($form, $formObject) {
                 if ($id === false) {
-                	$separation = Separation::layout('form-' . $form)->template()->write();
+                	$this->separation->layout('form-' . $form)->template()->write();
                 } else {
-                	$separation = Separation::layout('form-' . $form)->set([
+                	$this->separation->layout('form-' . $form)->set([
                 		['Sep' => $form, 'a' => ['id' => $id]]
                 	])->template()->write();
                 }
             })->name('form ' . $form);
-            $app->post('/form/' . $form . '(/:id)', function ($id=false) use ($formObject) {
-                FormModel::post($formObject);
+            $this->slim->post('/form/' . $form . '(/:id)', function ($id=false) use ($formObject) {
+                $this->formModel->post($formObject);
             });
 	    }
 	}
