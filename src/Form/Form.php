@@ -1,203 +1,164 @@
 <?php
 namespace Form;
 
-trait Form {
-	public $errors = [];
-	public $notices = [];
-	public $alerts = [];
+class Form {
+	private $root;
+	private $field;
+	private $response;
+	private $post;
+	private $db;
 
-    public function markerOverride ($marker) {
-        $this->markerOverride = $marker;
-    }
+	public function __construct ($root, $field, $post, $db, $response) {
+		$this->root = $root;
+		$this->field = $field;
+		$this->post = $post;
+		$this->response = $response;
+		$this->db = $db;
+	}
 
-	public function fieldLabelClass () {
-		if (isset($this->labelClass)) {
-			return $this->fieldLabelClass;
+	public function factory ($form, $id=false) {
+		$class = $this->root . '/forms/' . $form . '.php';
+		if (!file_exists($class)) {
+			throw new \Exception ($class . ': unknown file.');
 		}
-		return '';
-	}
-
-	public function fieldTagClass () {
-		if (isset($this->fieldTagClass)) {
-			return $this->fieldTagClass;
+		require_once($class);
+		if (!class_exists($form)) {
+			throw new \Exception ($form . ': unknown class.');
 		}
-		return '';
-	}
-
-	public function __construct() {
-		self::parseClassMethods($this);
-		$this->marker = strtolower(str_replace('\\', '_', get_class($this)));
-		$this->errors = new \ArrayObject();
-		$this->notices = new \ArrayObject();
-	}
-
-	public function killMethod ($name) {
-		foreach ($this->fields as $key => $field) {
-			if ($field['name'] == $name) {
-				unset($this->fields[$key]);
+		$formObject = new $form($this->field);
+		$formObject->fields = $this->parseFieldMethods($formObject);
+		$formObject->marker = strtolower(str_replace('\\', '__', $form));
+		$formObject->document = new \ArrayObject();
+		if ($id !== false) {
+			$document = $this->db->collection($formObject->storage['collection'])->findOne([
+				'_id' => $this->db->id($id)
+			]);
+			if (isset($document['_id'])) {
+				$formObject->document = new \ArrayObject($document);
 			}
 		}
+		if ($id === false) {
+			$formObject->id = new \MongoId();
+		} else {
+			$formObject->id = new \MongoId((string)$id);
+		}
+		return $formObject;
 	}
 
-	public function parseClassMethods ($object, $filter=false) {
+	public function parseFieldMethods ($object) {
 		$reflector = new \ReflectionClass($object);
 		$methods = $reflector->getMethods();
+		$fields = [];
 		foreach ($methods as $method) {
-			if (substr_count((string)$method->name, 'Fieldset') > 0) {
-				if ($filter === false || $filter == 'Fieldset') {
-					$this->fieldsets[] = $method->invoke($this);
-				} else {
-					continue;
-				}
-			} elseif (substr_count((string)$method->name, 'Field') > 0) {
-				if ($filter === false || $filter == 'Field') {
-					$data = $method->invoke($this);
-					if (isset($this->fieldsByKey[$data['name']])) {
-						if (isset($data['destroy']) && $data['destroy'] === true) {
-							unset($this->fieldsByKey[$data['name']]);
-							$this->killMethod($data['name']);
-						} else {
-							$this->fieldsByKey[$data['name']] = array_merge(
-								$this->fieldsByKey[$data['name']],
-								$method->invoke($this)
-							);
-						}
-					} else {
-						$this->fieldsByKey[$data['name']] = $data;
-						$this->fields[] = &$this->fieldsByKey[$data['name']];
-					}
-				} else {
-					continue;
-				}
-			} elseif (substr_count((string)$method->name, 'defaultTable') > 0) {
-				if ($filter === false || $filter == 'Table') {
-					$this->table = $method->invoke($this);
-				}
+			if (preg_match('/Field$/', (string)$method->name) == 0) {
+				continue;
 			}
+			$data = new \ArrayObject($method->invoke($object));
+			$fields[$data['name']] = $data;
 		}
+		return $fields;
 	}
 
-	public function json ($id=false) {
+	public function json ($formObject) {
 		$out = [];
-		if ($id !== false) {
-			FormModel::get($this, $id);
-		}
-		foreach ($this->fields as $field) {
+		foreach ($formObject->fields as $field) {
             if (!isset($field['display'])) {
             	continue;
             }
-	        if (isset($this->activeRecord[$field['name']])) {
-            	$field['data'] = $this->activeRecord[$field['name']];
-          	}
-            $field['marker'] = $this->marker;
-            $field['__CLASS__'] = get_class($this);
+	        if (isset($formObject->document[$field['name']])) {
+            	$field['data'] = $formObject->document[$field['name']];
+            	if (isset($field['transformOut'])) {
+	            	$function = $field['transformOut'];
+					$field['data'] = $function($field['data'], $formObject);
+				}
+            }
+            $field['marker'] = $formObject->marker;
+            $field['__CLASS__'] = get_class($formObject);
             $method = $field['display'];
             ob_start();
-            $method($field, $this);
+            $method($field, $formObject);
             $out[$field['name']] = ob_get_clean();
         }
-        if ($id !== false) {
-        	$out['id'] = '<input type="hidden" name="' . $this->marker . '[id]" value="' . $id . '" />';
-        }
+        $out['id'] = '<input type="hidden" name="' . $formObject->marker . '[id]" value="' . (string)$formObject->id . '" />';
         return json_encode($out, JSON_PRETTY_PRINT);
 	}
-	
-	public function setActiveRecord ($activeRecord) {
-		$this->activeRecord = $activeRecord;
+
+    public function sanitize ($formObject) {
+		if ($this->post->{$formObject->marker} === false) {
+			throw new \Exception('form not in post');
+		}
+		$formPost = $formObject->marker;
+		foreach ($formObject->fields as $field) {
+			if (!isset($field['transformIn'])) {
+				continue;
+			}
+			if (!isset($formPost[$field['name']])) {
+				continue;
+			}
+			$function = $field['transformIn'];
+			$formPost[$field['name']] = $function($formPost[$field['name']], $formPost);
+		}
 	}
 
-    public static function makeMarker ($class, $mode='') {
-        if ($mode != '') {
-            $mode = '-' . $mode;
-        }
-        return strtolower(str_replace('\\', '_', trim($class, '\\'))) . $mode;
-    }
-
-	public function documentRemove () {
-		return function ($admin, &$request) {};
-	}
-	
-	public function documentRemoved () {
-		return function ($admin, &$request) {};
-	}
-
-	public function documentSave () {
-		return function ($admin, &$document) {};
-	}
-	
-	public function documentSaved () {
-		return function ($admin, &$document) {};
-	}
-
-	public function documentUpdate () {
-		return function ($admin, &$document) {};
-	}
-	
-	public function documentUpdated () {
-		return function ($admin, &$document) {};
-	}
-	
-	public function documentAppend () {
-		return function ($admin, &$document, &$subdocument) {};
-	}
-	
-	public function documentAppended () {
-		return function ($admin, &$document, &$subdocument) {};
+	public function validate ($formObject) {
+		$passed = true;
+		$formPost = $this->post->{$formObject->marker};
+		foreach ($formObject->fields as $field) {
+            if (!isset($field['label']) || empty($field['label']) == '') {
+            	if (isset($field['errorLabel'])) {
+ 	               $field['label'] = $field['errorLabel'];
+ 	            } else {
+ 	            	$field['label'] = ucwords(str_replace('_', ' ', $field['name']));
+ 	            }
+            }
+			if (isset($field['required']) && is_callable($field['required'])) {
+				$required = $field['required'];
+				$field['required'] = $required($formPost[$field['name']], $formPost);
+			}
+			if (isset($field['required']) && $field['required'] == true) {
+				if (!self::fieldValidateRequired ($field, $formPost)) {
+					$passed = false;
+					$formObject->errors[] = $field['label'] . ' must have a value.';
+					continue;
+				}
+			}
+			if (isset($field['validate'])) {
+				$validate = $field['validate'];
+				$error = $validate($formPost[$field['name']], $formPost);
+				if ($error !== true) {
+					$passed = false;
+					$this->post->errorFieldSet($formObject->marker, $field['name'], $field['label'] . ': ' . $error);
+				}
+			}
+		}
+		return $passed;
 	}
 
-	public function documentAppendUpdate () {
-		return function ($admin, &$document, &$subdocument) {};
-	}
-	
-	public function documentAppendUpdated () {
-		return function ($admin, &$document, &$subdocument) {};
-	}
-
-	public function documentAppendRemove () {
-		return function ($admin, &$document, &$request) {};
-	}
-	
-	public function documentAppendRemoved () {
-		return function ($admin, &$document, &$request) {};
-	}
-	
-	public function beforeFieldsetUpdate () {
-		return function ($admin) {};
-	}
-	
-	public function beforeFieldset () {
-		return function ($admin) {};
-	}
-	
-	public function beforeFieldsetSave () {
-		return function ($admin) {};
-	}
-	
-	public function beforeTableList () {
-		return function ($admin) {};
-	}
-	
-	public function afterFieldsetUpdate () {
-		return function ($admin) {};
-	}
-	
-	public function afterFieldset () {
-		return function ($admin) {};
+	private static function fieldValidateRequired ($field, $formPost) {
+		if (isset($formPost[$field['name']])) {
+			if (is_array($formPost[$field['name']])) {
+				if (count($formPost[$field['name']]) == 0) {
+					return false;
+				}
+			} elseif (trim($formPost[$field['name']]) == '') {
+				return false;
+			}
+		} else {
+			return false;
+		}
+		return true;
 	}
 
-	public function afterFieldsetSave () {
-		return function ($admin) {};
+	public function responseSuccess () {
+		$this->response->body = json_encode([
+			'success' => true
+		], JSON_HEX_AMP);
 	}
-	
-	public function afterFieldsetAppend () {
-		return function ($admin) {};
-	}
-	
-	public function afterTableList () {
-		return function ($admin) {};
-	}
-	
-	public function beforeFieldsetTemplate () {
-		return function ($admin) {};
+
+	public function responseError () {
+		$this->response->body = json_encode([
+			'success' => false,
+			'errors' => $this->post->errorsGet()
+		], JSON_HEX_AMP);
 	}
 }

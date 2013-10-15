@@ -3,28 +3,26 @@ namespace Form;
 
 class FormRoute {
 	private $separation;
+	private $post;
 	private $slim;
+	private $topic;
+	private $response;
 
-	public function __construct ($slim, $formModel, $separation) {
+	public function __construct ($slim, $form, $post, $separation, $topic, $response) {
 		$this->slim = $slim;
-		$this->formModel = $formModel;
+		$this->post = $post;
+		$this->form = $form;
 		$this->separation = $separation;
+		$this->topic = $topic;
+		$this->response = $response;
 	}
 
 	public function json ($root) {
 		$this->slim->get('/json-form/:form(/:id)', function ($form, $id=false) {
 			if (isset($_GET['id']) && $id === false) {
 				$id = $_GET['id'];
-			}
-		    $class = $root . '/forms/' . $form . '.php';
-		    if (!file_exists($class)) {
-		        exit ($class . ': unknown file.');
-		    }
-		    require_once($class);
-		    if (!class_exists($form)) {
-		        exit ($form . ': unknown class.');
-		    }
-		    $formObject = new $form();
+			} 
+		    $formObject = $this->form->factory($form, $id);
 		    $head = null;
 		    $tail = null;
 		    if (isset($_GET['pretty'])) {
@@ -34,11 +32,11 @@ class FormRoute {
 		    	$head = $_GET['callback'] . '(';
 		    	$tail = ');';
 		   	}
-		    echo $head, $formObject->json($id), $tail;
+		    echo $head, $this->form->json($formObject, $id), $tail;
 		});
 	}
 
-	public function pages ($root) {
+	public function app ($root) {
 		$cacheFile = $root . '/forms/cache.json';
 		if (!file_exists($cacheFile)) {
 			return;
@@ -48,19 +46,38 @@ class FormRoute {
 			return;
 		}
 	    foreach ($forms as $form) {
-	    	require $root . '/forms/' . $form . '.php';
-			$formObject = new $form();
-	    	$this->slim->get('/form/' . $form . '(/:id)', function ($id=false) use ($form, $formObject) {
+	    	$this->slim->get('/form/' . $form . '(/:id)', function ($id=false) use ($form) {
                 if ($id === false) {
-                	$this->separation->layout('form-' . $form)->template()->write();
+                	$this->separation->layout('form-' . $form)->template()->write($this->response->body);
                 } else {
                 	$this->separation->layout('form-' . $form)->set([
-                		['Sep' => $form, 'a' => ['id' => $id]]
-                	])->template()->write();
+                		['id' => $form, 'args' => ['id' => $id]]
+                	])->template()->write($this->response->body);
                 }
             })->name('form ' . $form);
-            $this->slim->post('/form/' . $form . '(/:id)', function ($id=false) use ($formObject) {
-                $this->formModel->post($formObject);
+            $this->slim->post('/form/' . $form . '(/:id)', function ($id=false) use ($form) {
+            	$formObject = $this->form->factory($form, $id);
+            	if ($id === false) {
+            		if (isset($this->post->{$formObject->marker}['id'])) {
+            			$id = $this->post->{$formObject->marker}['id'];
+            		} else {
+            			throw new \Exception('ID not supplied in post.');
+            		}
+            	}
+               	$event = [
+            		'dbURI' => $formObject->storage['collection'] . ':' . $id,
+            		'formMarker' => $formObject->marker
+            	];
+            	if (!$this->form->validate($formObject)) {
+            		$this->form->responseError();
+            	}
+            	$this->form->sanitize($formObject);
+            	$this->topic->publish('form-' . $form . '-save', $event);
+            	if ($this->post->statusCheck() == 'saved') {
+            		$this->form->responseSuccess();
+            	} else {
+            		$this->form->responseError();	
+            	}
             });
 	    }
 	}

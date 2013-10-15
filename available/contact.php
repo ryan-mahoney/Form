@@ -1,10 +1,8 @@
 <?php
-use Form\Form;
-use Field\Field;
-
 class contact {
-	use Form;
-
+	public function __construct ($field) {
+		$this->field = $field;
+	}
 	public $storage = [
 		'collection'	=> 'contacts',
 		'key'			=> '_id'
@@ -14,7 +12,7 @@ class contact {
 	function first_nameField() {
 		return [
 			'name'		=> 'first_name',
-			'display'	=> Field::inputText(),
+			'display'	=> $this->field->inputText(),
 			'required' 	=> true
 		];
 	}
@@ -23,7 +21,7 @@ class contact {
 		return [
 			'name'		=> 'last_name',
 			'label'		=> 'Last Name',
-			'display'	=> Field::inputText(),
+			'display'	=> $this->field->inputText(),
 			'required'	=> true
 		];
 	}
@@ -32,7 +30,7 @@ class contact {
 		return [
 			'name'		=> 'phone',
 			'label'		=> 'Phone',
-			'display'	=> Field::inputText(),
+			'display'	=> $this->field->inputText(),
 			'required'	=> true
 		];
 	}
@@ -41,7 +39,7 @@ class contact {
 		return [
 			'name'		=> 'email',
 			'label'		=> 'Email',
-			'display'	=> Field::inputText(),
+			'display'	=> $this->field->inputText(),
 			'required'	=> true
 		];
 	}
@@ -50,12 +48,8 @@ class contact {
 		return [
 			'name'		=> 'message',
 			'label'		=> 'Message',
-			'display'	=> Field::textarea(),
+			'display'	=> $this->field->textarea(),
 			'required'	=> true
 		];
-	}
-
-	function documentSaved () {		
-		//return VCDC\contact\Library::documentSaved();
 	}
 }
