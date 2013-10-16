@@ -70,6 +70,7 @@ class FormRoute {
             	];
             	if (!$this->form->validate($formObject)) {
             		$this->form->responseError();
+            		return;
             	}
             	$this->form->sanitize($formObject);
             	$this->topic->publish('form-' . $form . '-save', $event);

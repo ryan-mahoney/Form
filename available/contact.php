@@ -12,6 +12,7 @@ class contact {
 	function first_nameField() {
 		return [
 			'name'		=> 'first_name',
+			'placeholder' => 'First Name',
 			'display'	=> $this->field->inputText(),
 			'required' 	=> true
 		];
@@ -20,6 +21,7 @@ class contact {
 	function last_nameField() {
 		return [
 			'name'		=> 'last_name',
+			'placeholder' => 'Last Name',
 			'label'		=> 'Last Name',
 			'display'	=> $this->field->inputText(),
 			'required'	=> true
@@ -29,7 +31,7 @@ class contact {
 	function phoneField() {
 		return [
 			'name'		=> 'phone',
-			'label'		=> 'Phone',
+			'placeholder'	=> 'Phone',
 			'display'	=> $this->field->inputText(),
 			'required'	=> true
 		];
@@ -38,7 +40,7 @@ class contact {
 	function emailField() {
 		return [
 			'name'		=> 'email',
-			'label'		=> 'Email',
+			'placeholder'		=> 'Email Address',
 			'display'	=> $this->field->inputText(),
 			'required'	=> true
 		];
@@ -47,7 +49,7 @@ class contact {
 	function messageField() {
 		return [
 			'name'		=> 'message',
-			'label'		=> 'Message',
+			'placeholder'		=> 'Enter your message here',
 			'display'	=> $this->field->textarea(),
 			'required'	=> true
 		];

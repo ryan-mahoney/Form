@@ -106,7 +106,7 @@ class Form {
 		foreach ($formObject->fields as $field) {
             if (!isset($field['label']) || empty($field['label']) == '') {
             	if (isset($field['errorLabel'])) {
- 	               $field['label'] = $field['errorLabel'];
+ 	            	$field['label'] = $field['errorLabel'];
  	            } else {
  	            	$field['label'] = ucwords(str_replace('_', ' ', $field['name']));
  	            }
@@ -118,7 +118,7 @@ class Form {
 			if (isset($field['required']) && $field['required'] == true) {
 				if (!self::fieldValidateRequired ($field, $formPost)) {
 					$passed = false;
-					$formObject->errors[] = $field['label'] . ' must have a value.';
+					$this->post->errorFieldSet($formObject->marker, $field['name'], $field['label'] . ' must have a value.');
 					continue;
 				}
 			}
