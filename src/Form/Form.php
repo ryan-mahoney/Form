@@ -149,10 +149,32 @@ class Form {
 		return true;
 	}
 
-	public function responseSuccess () {
-		$this->response->body = json_encode([
+	public function responseSuccess ($formObject) {
+		$response = [
 			'success' => true
-		], JSON_HEX_AMP);
+		];
+		if (!isset($formObject->after)) {
+			$formObject->after = 'notice';
+		}
+		$response['after'] = $formObject->after;
+		switch ($formObject->after) {
+			case 'redirect':
+				$response['redirect'] = $formObject->redirect;
+				break;
+
+			case 'notice':
+				$response['notice'] = $formObject->notice;
+				if (!isset($formObject->noticeDetails)) {
+					$formObject->noticeDetails = '';
+				}
+				$response['noticeDetails'] = $formObject->noticeDetails;
+				break;
+
+			case 'function':
+				$response['function'] = $formObject->function;
+				break;
+		}
+		$this->response->body = json_encode($response, JSON_HEX_AMP);
 	}
 
 	public function responseError () {

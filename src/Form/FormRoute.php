@@ -75,7 +75,7 @@ class FormRoute {
             	$this->form->sanitize($formObject);
             	$this->topic->publish('form-' . $form . '-save', $event);
             	if ($this->post->statusCheck() == 'saved') {
-            		$this->form->responseSuccess();
+            		$this->form->responseSuccess($formObject);
             	} else {
             		$this->form->responseError();	
             	}

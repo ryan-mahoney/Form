@@ -7,7 +7,11 @@ class contact {
 		'collection'	=> 'contacts',
 		'key'			=> '_id'
 	];
-	public $saveRedirect = '/page/contact_receipt.html';
+	public $after = 'function';
+	public $redirect = 'http://www.google.com';
+	public $notice = 'Your contact request has been received';
+	public $noticeDetails = 'Life is good.';
+	public $function = 'contact';
 
 	function first_nameField() {
 		return [
