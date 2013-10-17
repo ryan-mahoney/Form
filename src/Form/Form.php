@@ -17,7 +17,7 @@ class Form {
 	}
 
 	public function factory ($form, $id=false) {
-		$class = $this->root . '/forms/' . $form . '.php';
+		$class = $this->root . '/../forms/' . $form . '.php';
 		if (!file_exists($class)) {
 			throw new \Exception ($class . ': unknown file.');
 		}
