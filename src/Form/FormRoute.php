@@ -17,7 +17,7 @@ class FormRoute {
 		$this->response = $response;
 	}
 
-	public function json ($root) {
+	public function json () {
 		$this->slim->get('/json-form/:form(/:id)', function ($form, $id=false) {
 			if (isset($_GET['id']) && $id === false) {
 				$id = $_GET['id'];
@@ -37,7 +37,7 @@ class FormRoute {
 	}
 
 	public function app ($root) {
-		$cacheFile = $root . '/forms/cache.json';
+		$cacheFile = $root . '/../forms/cache.json';
 		if (!file_exists($cacheFile)) {
 			return;
 		}

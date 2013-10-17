@@ -7,7 +7,7 @@ class contact {
 		'collection'	=> 'contacts',
 		'key'			=> '_id'
 	];
-	public $after = 'function';
+	public $after = 'notice';
 	public $redirect = 'http://www.google.com';
 	public $notice = 'Your contact request has been received';
 	public $noticeDetails = 'Life is good.';
