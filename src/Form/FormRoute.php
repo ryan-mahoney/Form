@@ -50,9 +50,7 @@ class FormRoute {
                 if ($id === false) {
                 	$this->separation->layout('form-' . $form)->template()->write($this->response->body);
                 } else {
-                	$this->separation->layout('form-' . $form)->set([
-                		['id' => $form, 'args' => ['id' => $id]]
-                	])->template()->write($this->response->body);
+                	$this->separation->layout('form-' . $form)->args($form, ['id' => $id])->template()->write($this->response->body);
                 }
             })->name('form ' . $form);
             $this->slim->post('/form/' . $form . '(/:id)', function ($id=false) use ($form) {
