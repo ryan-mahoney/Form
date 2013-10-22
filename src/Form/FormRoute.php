@@ -59,9 +59,9 @@ class FormRoute {
 	    foreach ($forms as $form) {
 	    	$this->slim->get('/form/' . $form . '(/:id)', function ($id=false) use ($form) {
                 if ($id === false) {
-                	$this->separation->layout('form-' . $form)->template()->write($this->response->body);
+                	$this->separation->layout('forms/' . $form)->template()->write($this->response->body);
                 } else {
-                	$this->separation->layout('form-' . $form)->args($form, ['id' => $id])->template()->write($this->response->body);
+                	$this->separation->layout('forms/' . $form)->args($form, ['id' => $id])->template()->write($this->response->body);
                 }
             })->name('form ' . $form);
             $this->slim->post('/form/' . $form . '(/:id)', function ($id=false) use ($form) {
