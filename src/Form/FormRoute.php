@@ -7,14 +7,21 @@ class FormRoute {
 	private $slim;
 	private $topic;
 	private $response;
+	private $field;
+	public $cache = false;
 
-	public function __construct ($slim, $form, $post, $separation, $topic, $response) {
+	public function __construct ($slim, $form, $field, $post, $separation, $topic, $response) {
 		$this->slim = $slim;
 		$this->post = $post;
 		$this->form = $form;
 		$this->separation = $separation;
 		$this->topic = $topic;
 		$this->response = $response;
+		$this->field = $field;
+	}
+
+	public function cacheSet ($cache) {
+		$this->$cache = $cache;
 	}
 
 	public function json () {
@@ -37,11 +44,15 @@ class FormRoute {
 	}
 
 	public function app ($root) {
-		$cacheFile = $root . '/../forms/cache.json';
-		if (!file_exists($cacheFile)) {
-			return;
+		if (!empty($this->cache)) {
+			$collections = $this->cache;
+		} else {
+			$cacheFile = $root . '/../forms/cache.json';
+			if (!file_exists($cacheFile)) {
+				return;
+			}
+			$forms = (array)json_decode(file_get_contents($cacheFile), true);
 		}
-		$forms = (array)json_decode(file_get_contents($cacheFile), true);
 		if (!is_array($forms)) {
 			return;
 		}
@@ -79,5 +90,63 @@ class FormRoute {
             	}
             });
 	    }
+	}
+
+	private static function stubRead ($name, &$collection, $url, $root) {
+		return str_replace(['{{$url}}', '{{$plural}}', '{{$singular}}'], [$url, $collection['p'], $collection['s']], $data);
+	}
+
+	public function build ($root, $url) {
+		$cache = [];
+		$dirFiles = glob($root . '/../forms/*.php');
+		foreach ($dirFiles as $form) {
+			$class = basename($form, '.php');
+			$cache[] = $class;
+		}
+		$json = json_encode($cache, JSON_PRETTY_PRINT);
+		file_put_contents($root . '/../forms/cache.json', $json);
+		foreach ($cache as $form) {
+			$filename = $root . '/layouts/forms/' . $form . '.html';
+			if (!file_exists($filename)) {
+				$data = file_get_contents($root . '/../vendor/virtuecenter/build/static/form.html');
+				$data = str_replace(['{{$form}}'], [$form], $data);
+				file_put_contents($filename, $data);
+			}
+			$filename = $root . '/partials/forms/' . $form . '.hbs';
+			if (!file_exists($filename)) {
+				$data = file_get_contents($root . '/../vendor/virtuecenter/build/static/form.hbs');
+				$formObject = $this->form->factory($form);
+				ob_start();
+				echo '
+<form class="ui form segment" data-xhr="true" data-marker="contact" method="post">', "\n";
+
+				foreach ($formObject->fields as $field) {
+					echo '
+    <div class="field">
+        <label>', ucwords(str_replace('_', ' ', $field['name'])), '</label>
+        <div class="ui left labeled input">
+            {{{', $field['name'], '}}}
+            <div class="ui corner label">
+            	<i class="icon asterisk"></i>
+            </div>
+        </div>
+    </div>', "\n";
+				}
+				echo '
+    {{{id}}}
+	<input type="submit" class="ui blue submit button" value="Submit" />
+</form>';
+				$generated = ob_get_clean();
+				$data = str_replace(['{{$form}}', '{{$generated}}'], [$form, $generated], $data);
+				file_put_contents($filename, $data);
+			}
+			$filename = $root . '/../app/forms/' . $form . '.yml';
+			if (!file_exists($filename)) {
+				$data = file_get_contents($root . '/../vendor/virtuecenter/build/static/app-form.yml');
+				$data = str_replace(['{{$form}}', '{{$url}}'], [$form, $url], $data);
+				file_put_contents($filename, $data);
+			}
+		}
+		return $json;
 	}
 }
