@@ -24,12 +24,16 @@ class FormRoute {
 		$this->$cache = $cache;
 	}
 
-	public function json () {
-		$this->slim->get('/json-form/:form(/:id)', function ($form, $id=false) {
+	public function json ($bundle='') {
+		$bundlePath = '';
+		if ($bundle != '') {
+			$bundlePath = '/' . $bundle;
+		}
+		$this->slim->get($bundlePath . '/json-form/:form(/:id)', function ($form, $id=false) use ($bundle) {
 			if (isset($_GET['id']) && $id === false) {
 				$id = $_GET['id'];
 			} 
-		    $formObject = $this->form->factory($form, $id);
+		    $formObject = $this->form->factory($form, $id, $bundle);
 		    $head = null;
 		    $tail = null;
 		    if (isset($_GET['pretty'])) {
@@ -43,7 +47,11 @@ class FormRoute {
 		});
 	}
 
-	public function app ($root) {
+	public function app ($root, $bundle='') {
+		$bundlePath = '';
+		if ($bundle != '') {
+			$bundlePath = '/' . $bundle;
+		}
 		if (!empty($this->cache)) {
 			$collections = $this->cache;
 		} else {
@@ -57,15 +65,19 @@ class FormRoute {
 			return;
 		}
 	    foreach ($forms as $form) {
-	    	$this->slim->get('/form/' . $form . '(/:id)', function ($id=false) use ($form) {
+	    	$this->slim->get($bundlePath . '/form/' . $form . '(/:id)', function ($id=false) use ($form, $bundle) {
+	    		$bundlePath = '';
+	    		if ($bundle != '') {
+	    			$bundlePath = $bundle . '/';
+	    		}
                 if ($id === false) {
-                	$this->separation->layout('forms/' . $form)->template()->write($this->response->body);
+                	$this->separation->layout( 'forms/' . $bundlePath . $form)->template()->write($this->response->body);
                 } else {
-                	$this->separation->layout('forms/' . $form)->args($form, ['id' => $id])->template()->write($this->response->body);
+                	$this->separation->layout('forms/' . $bundlePath . $form)->args($form, ['id' => $id])->template()->write($this->response->body);
                 }
             })->name('form ' . $form);
-            $this->slim->post('/form/' . $form . '(/:id)', function ($id=false) use ($form) {
-            	$formObject = $this->form->factory($form, $id);
+            $this->slim->post($bundlePath . '/form/' . $form . '(/:id)', function ($id=false) use ($form, $bundle) {
+            	$formObject = $this->form->factory($form, $id, $bundle);
             	if ($id === false) {
             		if (isset($this->post->{$formObject->marker}['id'])) {
             			$id = $this->post->{$formObject->marker}['id'];
@@ -96,7 +108,17 @@ class FormRoute {
 		return str_replace(['{{$url}}', '{{$plural}}', '{{$singular}}'], [$url, $collection['p'], $collection['s']], $data);
 	}
 
-	public function build ($root, $url) {
+	public function build ($root, $url=false, $bundle='') {
+		$rootProject = $root . '/..';
+		$bundlePath = '';
+		if ($bundle != '') {
+			$bundlePath = $bundle . '/';
+			$tmp = explode('/', $root);
+			array_pop($tmp);
+			array_pop($tmp);
+			array_pop($tmp);
+			$rootProject = implode('/', $tmp);
+		}
 		$cache = [];
 		$dirFiles = glob($root . '/../forms/*.php');
 		foreach ($dirFiles as $form) {
@@ -108,14 +130,14 @@ class FormRoute {
 		foreach ($cache as $form) {
 			$filename = $root . '/layouts/forms/' . $form . '.html';
 			if (!file_exists($filename)) {
-				$data = file_get_contents($root . '/../vendor/virtuecenter/build/static/form.html');
+				$data = file_get_contents($rootProject . '/vendor/virtuecenter/build/static/form.html');
 				$data = str_replace(['{{$form}}'], [$form], $data);
 				file_put_contents($filename, $data);
 			}
 			$filename = $root . '/partials/forms/' . $form . '.hbs';
 			if (!file_exists($filename)) {
-				$data = file_get_contents($root . '/../vendor/virtuecenter/build/static/form.hbs');
-				$formObject = $this->form->factory($form);
+				$data = file_get_contents($rootProject . '/vendor/virtuecenter/build/static/form.hbs');
+				$formObject = $this->form->factory($form, false, $bundle);
 				ob_start();
 				echo '
 <form class="ui form segment" data-xhr="true" data-marker="contact" method="post">', "\n";
@@ -140,11 +162,13 @@ class FormRoute {
 				$data = str_replace(['{{$form}}', '{{$generated}}'], [$form, $generated], $data);
 				file_put_contents($filename, $data);
 			}
-			$filename = $root . '/../app/forms/' . $form . '.yml';
-			if (!file_exists($filename)) {
-				$data = file_get_contents($root . '/../vendor/virtuecenter/build/static/app-form.yml');
-				$data = str_replace(['{{$form}}', '{{$url}}'], [$form, $url], $data);
-				file_put_contents($filename, $data);
+			if ($url !== false) {
+				$filename = $root . '/../app/forms/' . $form . '.yml';
+				if (!file_exists($filename)) {
+					$data = file_get_contents($rootProject . '/vendor/virtuecenter/build/static/app-form.yml');
+					$data = str_replace(['{{$form}}', '{{$url}}'], [$form, $url], $data);
+					file_put_contents($filename, $data);
+				}
 			}
 		}
 		return $json;

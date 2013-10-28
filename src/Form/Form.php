@@ -16,8 +16,12 @@ class Form {
 		$this->db = $db;
 	}
 
-	public function factory ($form, $id=false) {
-		$class = $this->root . '/../forms/' . $form . '.php';
+	public function factory ($form, $id=false, $bundle='') {
+		if (empty($bundle)) {
+			$class = $this->root . '/../forms/' . $form . '.php';
+		} else {
+			$class = $this->root . '/../bundles/' . $bundle . '/forms/' . $form . '.php';
+		}
 		if (!file_exists($class)) {
 			throw new \Exception ($class . ': unknown file.');
 		}
