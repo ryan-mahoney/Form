@@ -21,7 +21,7 @@ class FormRoute {
 	}
 
 	public function cacheSet ($cache) {
-		$this->$cache = $cache;
+		$this->cache = $cache;
 	}
 
 	public function json ($bundle='') {
@@ -52,8 +52,8 @@ class FormRoute {
 		if ($bundle != '') {
 			$bundlePath = '/' . $bundle;
 		}
-		if (!empty($this->cache)) {
-			$collections = $this->cache;
+		if (!empty($this->cache) && $bundle == '') {
+			$forms = $this->cache;
 		} else {
 			$cacheFile = $root . '/../forms/cache.json';
 			if (!file_exists($cacheFile)) {
@@ -93,8 +93,12 @@ class FormRoute {
             		$this->form->responseError();
             		return;
             	}
+            	$bundleTopic = '';
+            	if (!empty($bundle)) {
+            		$bundleTopic = $bundle . '-';
+            	}
             	$this->form->sanitize($formObject);
-            	$this->topic->publish('form-' . $form . '-save', $event);
+            	$this->topic->publish($bundleTopic . 'form-' . $form . '-save', $event);
             	if ($this->post->statusCheck() == 'saved') {
             		$this->form->responseSuccess($formObject);
             	} else {
@@ -140,7 +144,7 @@ class FormRoute {
 				$formObject = $this->form->factory($form, false, $bundle);
 				ob_start();
 				echo '
-<form class="ui form segment" data-xhr="true" data-marker="contact" method="post">', "\n";
+<form class="ui form segment" data-xhr="true" method="post">', "\n";
 
 				foreach ($formObject->fields as $field) {
 					echo '
