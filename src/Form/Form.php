@@ -122,7 +122,7 @@ class Form {
 			if (isset($field['required']) && $field['required'] == true) {
 				if (!self::fieldValidateRequired ($field, $formPost)) {
 					$passed = false;
-					$this->post->errorFieldSet($formObject->marker, $field['name'], $field['label'] . ' must have a value.');
+					$this->post->errorFieldSet($formObject->marker, $field['label'] . ' must have a value.', $field['name']);
 					continue;
 				}
 			}
@@ -131,7 +131,7 @@ class Form {
 				$error = $validate($formPost[$field['name']], $formPost);
 				if ($error !== true) {
 					$passed = false;
-					$this->post->errorFieldSet($formObject->marker, $field['name'], $field['label'] . ': ' . $error);
+					$this->post->errorFieldSet($formObject->marker, $field['label'] . ': ' . $error, $field['name']);
 				}
 			}
 		}
