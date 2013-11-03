@@ -71,7 +71,7 @@ class FormRoute {
 	    			$bundlePath = $bundle . '/';
 	    		}
                 if ($id === false) {
-                	$this->separation->layout( 'forms/' . $bundlePath . $form)->template()->write($this->response->body);
+                	$this->separation->layout('forms/' . $bundlePath . $form)->template()->write($this->response->body);
                 } else {
                 	$this->separation->layout('forms/' . $bundlePath . $form)->args($form, ['id' => $id])->template()->write($this->response->body);
                 }
@@ -85,7 +85,7 @@ class FormRoute {
             			throw new \Exception('ID not supplied in post.');
             		}
             	}
-               	$event = [
+               	$context = [
             		'dbURI' => $formObject->storage['collection'] . ':' . $id,
             		'formMarker' => $formObject->marker
             	];
@@ -98,7 +98,10 @@ class FormRoute {
             		$bundleTopic = $bundle . '-';
             	}
             	$this->form->sanitize($formObject);
-            	$this->topic->publish($bundleTopic . 'form-' . $form . '-save', $event);
+            	$this->topic->publish($bundleTopic . 'form-' . $form . '-save', $context);
+            	if (!empty($bundle)) {
+            		$this->topic->publish($bundleTopic . 'form', $context);
+            	}
             	if ($this->post->statusCheck() == 'saved') {
             		$this->form->responseSuccess($formObject);
             	} else {
