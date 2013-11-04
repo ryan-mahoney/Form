@@ -65,6 +65,7 @@ class FormRoute {
 			return;
 		}
 	    foreach ($forms as $form) {
+	    	//view
 	    	$this->slim->get($bundlePath . '/form/' . $form . '(/:id)', function ($id=false) use ($form, $bundle) {
 	    		$bundlePath = '';
 	    		if ($bundle != '') {
@@ -76,6 +77,8 @@ class FormRoute {
                 	$this->separation->layout('forms/' . $bundlePath . $form)->args($form, ['id' => $id])->template()->write($this->response->body);
                 }
             })->name('form ' . $form);
+            
+            //update
             $this->slim->post($bundlePath . '/form/' . $form . '(/:id)', function ($id=false) use ($form, $bundle) {
             	$formObject = $this->form->factory($form, $id, $bundle);
             	if ($id === false) {
@@ -100,9 +103,38 @@ class FormRoute {
             	$this->form->sanitize($formObject);
             	$this->topic->publish($bundleTopic . 'form-' . $form . '-save', $context);
             	if (!empty($bundle)) {
-            		$this->topic->publish($bundleTopic . 'form', $context);
+            		$this->topic->publish($bundleTopic . 'form-save', $context);
             	}
             	if ($this->post->statusCheck() == 'saved') {
+            		$this->form->responseSuccess($formObject);
+            	} else {
+            		$this->form->responseError();	
+            	}
+            });
+
+			//delete
+			$this->slim->delete($bundlePath . '/form/' . $form . '(/:id)', function ($id=false) use ($form, $bundle) {
+            	$formObject = $this->form->factory($form, $id, $bundle);
+            	if ($id === false) {
+            		if (isset($this->post->{$formObject->marker}['id'])) {
+            			$id = $this->post->{$formObject->marker}['id'];
+            		} else {
+            			throw new \Exception('ID not supplied in post.');
+            		}
+            	}
+               	$context = [
+            		'dbURI' => $formObject->storage['collection'] . ':' . $id,
+            		'formMarker' => $formObject->marker
+            	];
+            	$bundleTopic = '';
+            	if (!empty($bundle)) {
+            		$bundleTopic = $bundle . '-';
+            	}
+            	$this->topic->publish($bundleTopic . 'form-' . $form . '-delete', $context);
+            	if (!empty($bundle)) {
+            		$this->topic->publish($bundleTopic . 'form-delete', $context);
+            	}
+            	if ($this->post->statusCheck() == 'deleted') {
             		$this->form->responseSuccess($formObject);
             	} else {
             		$this->form->responseError();	

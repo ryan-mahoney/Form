@@ -26,10 +26,15 @@ class Form {
 			throw new \Exception ($class . ': unknown file.');
 		}
 		require_once($class);
-		if (!class_exists($form)) {
-			throw new \Exception ($form . ': unknown class.');
+		if (empty($bundle)) {
+			$className = 'Form\\' . $form;
+		} else {
+			$className = $bundle . '\Form\\' . $form; 
 		}
-		$formObject = new $form($this->field);
+		if (!class_exists($className)) {
+			throw new \Exception ($className . ': unknown class.');
+		}
+		$formObject = new $className($this->field);
 		$formObject->fields = $this->parseFieldMethods($formObject);
 		$formObject->marker = strtolower(str_replace('\\', '__', $form));
 		$formObject->document = new \ArrayObject();
