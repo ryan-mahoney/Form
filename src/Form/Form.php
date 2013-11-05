@@ -16,20 +16,20 @@ class Form {
 		$this->db = $db;
 	}
 
-	public function factory ($form, $id=false, $bundle='') {
+	public function factory ($form, $id=false, $bundle='', $path='forms', $namespace='Form\\') {
 		if (empty($bundle)) {
-			$class = $this->root . '/../forms/' . $form . '.php';
+			$class = $this->root . '/../' . $path . '/' . $form . '.php';
 		} else {
-			$class = $this->root . '/../bundles/' . $bundle . '/forms/' . $form . '.php';
+			$class = $this->root . '/../bundles/' . $bundle . '/' . $path . '/' . $form . '.php';
 		}
 		if (!file_exists($class)) {
 			throw new \Exception ($class . ': unknown file.');
 		}
 		require_once($class);
 		if (empty($bundle)) {
-			$className = 'Form\\' . $form;
+			$className = $namespace . $form;
 		} else {
-			$className = $bundle . '\Form\\' . $form; 
+			$className = $bundle . '\\' . $namespace . $form; 
 		}
 		if (!class_exists($className)) {
 			throw new \Exception ($className . ': unknown class.');

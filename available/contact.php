@@ -1,4 +1,11 @@
 <?php
+/*
+ * @version .1
+ * @link https://raw.github.com/virtuecenter/form/master/available/contact.php
+ * @mode upgrade
+ */
+namespace Form;
+
 class contact {
 	public function __construct ($field) {
 		$this->field = $field;
@@ -8,10 +15,10 @@ class contact {
 		'key'			=> '_id'
 	];
 	public $after = 'notice';
-	public $redirect = 'http://www.google.com';
+	//public $redirect = 'http://www.google.com';
 	public $notice = 'Your contact request has been received';
-	public $noticeDetails = 'Life is good.';
-	public $function = 'contact';
+	//public $noticeDetails = 'Life is good.';
+	//public $function = 'contact';
 
 	function first_nameField() {
 		return [
