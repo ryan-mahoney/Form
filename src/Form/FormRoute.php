@@ -236,6 +236,7 @@ class FormRoute {
 
     public function upgrade ($root) {
         $manifest = (array)json_decode(file_get_contents('https://raw.github.com/virtuecenter/form/master/available/manifest.json'), true);
+        $upgraded = 0;
         foreach (glob($root . '/../forms/*.php') as $filename) {
             $lines = file($filename);
             $version = false;
@@ -274,7 +275,9 @@ class FormRoute {
             if ($newVersion > $version) {
                 file_put_contents($filename, file_get_contents($link));
                 echo 'Upgraded Form: ', basename($filename, '.php'), ' to version: ', $newVersion, "\n";
+                $upgraded++;
             }
         }
+        echo 'Upgraded ', $upgraded, ' forms.', "\n";
     }
 }
