@@ -82,11 +82,7 @@ class Form {
 				}
             }
             $field['marker'] = $formObject->marker;
-            $field['__CLASS__'] = get_class($formObject);
-            $method = $field['display'];
-            ob_start();
-            $method($field, $formObject);
-            $out[$field['name']] = ob_get_clean();
+            $out[$field['name']] = $this->field->render($field['display'], $field);
         }
         $out['id'] = '<input type="hidden" name="' . $formObject->marker . '[id]" value="' . (string)$formObject->id . '" />';
         return json_encode($out, JSON_PRETTY_PRINT);
