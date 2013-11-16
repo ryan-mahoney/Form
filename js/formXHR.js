@@ -28,7 +28,7 @@ $(document).ready(function () {
                         break;
 
                     case 'function':
-                        window[response['function']](form, submittedData);
+                        window[response['function']](form, submittedData, response);
                         break;
 
                     case 'another':

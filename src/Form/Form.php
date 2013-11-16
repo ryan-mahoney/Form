@@ -16,7 +16,7 @@ class Form {
 		$this->db = $db;
 	}
 
-	public function factory ($form, $id=false, $bundle='', $path='forms', $namespace='Form\\') {
+	public function factory ($form, $dbURI=false, $bundle='', $path='forms', $namespace='Form\\') {
 		if (empty($bundle)) {
 			$class = $this->root . '/../' . $path . '/' . $form . '.php';
 		} else {
@@ -38,18 +38,16 @@ class Form {
 		$formObject->fields = $this->parseFieldMethods($formObject);
 		$formObject->marker = strtolower(str_replace('\\', '__', $form));
 		$formObject->document = new \ArrayObject();
-		if ($id !== false) {
-			$document = $this->db->collection($formObject->storage['collection'])->findOne([
-				'_id' => $this->db->id($id)
-			]);
+		if ($dbURI !== false) {
+			$document = $this->db->documentStage($dbURI)->current();
 			if (isset($document['_id'])) {
 				$formObject->document = new \ArrayObject($document);
 			}
 		}
-		if ($id === false) {
-			$formObject->id = new \MongoId();
+		if ($dbURI === false) {
+			$formObject->id = $formObject->storage['collection'] . ':' . new \MongoId();
 		} else {
-			$formObject->id = new \MongoId((string)$id);
+			$formObject->id = $dbURI;
 		}
 		return $formObject;
 	}
@@ -82,7 +80,7 @@ class Form {
 				}
             }
             $field['marker'] = $formObject->marker;
-            $out[$field['name']] = $this->field->render($field['display'], $field);
+            $out[$field['name']] = $this->field->render($field['display'], $field, $formObject->document, $formObject->fields);
         }
         $out['id'] = '<input type="hidden" name="' . $formObject->marker . '[id]" value="' . (string)$formObject->id . '" />';
         return json_encode($out, JSON_PRETTY_PRINT);

@@ -32,7 +32,7 @@ class FormRoute {
         $this->slim->get($prefix . $bundlePath . '/json-' . $route . '/:form(/:id)', function ($form, $id=false) use ($bundle, $namespace, $path) {
             if (isset($_GET['id']) && $id === false) {
                 $id = $_GET['id'];
-            } 
+            }
             $formObject = $this->form->factory($form, $id, $bundle, $path, $namespace);
             $head = null;
             $tail = null;
@@ -96,7 +96,7 @@ class FormRoute {
                     }
                 }
                 $context = [
-                    'dbURI' => $formObject->storage['collection'] . ':' . $id,
+                    'dbURI' => $id,
                     'formMarker' => $formObject->marker
                 ];
                 if (!$this->form->validate($formObject)) {
@@ -127,17 +127,17 @@ class FormRoute {
             });
 
             //delete
-            $this->slim->delete($prefix . $bundlePath . '/' . $route . '/' . $form . '(/:id)', function ($id=false) use ($form, $bundle, $path, $namespace, $route, $prefix) {
-                $formObject = $this->form->factory($form, $id, $bundle, $path, $namespace);
-                if ($id === false) {
+            $this->slim->delete($prefix . $bundlePath . '/' . $route . '/' . $form . '(/:id)', function ($dbURI=false) use ($form, $bundle, $path, $namespace, $route, $prefix) {
+                $formObject = $this->form->factory($form, $dbURI, $bundle, $path, $namespace);
+                if ($dbURI === false) {
                     if (isset($this->post->{$formObject->marker}['id'])) {
-                        $id = $this->post->{$formObject->marker}['id'];
+                        $dbURI = $this->post->{$formObject->marker}['id'];
                     } else {
                         throw new \Exception('ID not supplied in post.');
                     }
                 }
                 $context = [
-                    'dbURI' => $formObject->storage['collection'] . ':' . $id,
+                    'dbURI' => $dbURI,
                     'formMarker' => $formObject->marker
                 ];
                 $bundleTopic = '';
