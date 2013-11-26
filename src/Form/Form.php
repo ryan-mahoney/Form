@@ -90,7 +90,7 @@ class Form {
 		if ($this->post->{$formObject->marker} === false) {
 			throw new \Exception('form not in post');
 		}
-		$formPost = $formObject->marker;
+		$formPost = $this->post->{$formObject->marker};
 		foreach ($formObject->fields as $field) {
 			if (!isset($field['transformIn'])) {
 				continue;
