@@ -36,6 +36,7 @@ class Form {
 		}
 		$formObject = new $className($this->field);
 		$formObject->fields = $this->parseFieldMethods($formObject);
+		$formObject->db = $this->db;
 		$formObject->marker = strtolower(str_replace('\\', '__', $form));
 		$formObject->document = new \ArrayObject();
 		if ($dbURI !== false) {
