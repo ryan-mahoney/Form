@@ -35,6 +35,9 @@ $(document).ready(function () {
                         break;
                 }
             } else {
+                if (typeof(FormError) == "function") {
+                    FormError(response['errors']);
+                }
                 for (marker in response['errors']) {
                     formUI.errorShow(form, marker, response['errors'][marker]);
                 }
