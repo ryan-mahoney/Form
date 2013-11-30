@@ -83,8 +83,26 @@ class Form {
             $field['marker'] = $formObject->marker;
             $out[$field['name']] = $this->field->render($field['display'], $field, $formObject->document, $formObject->fields);
         }
+        if (isset($formObject->document['modified_date'])) {
+        	$out['modified_date'] = self::date($formObject->document['modified_date']);
+        }
+        if (isset($formObject->document['created_date'])) {
+        	$out['created_date'] = self::date($formObject->document['created_date']);
+        }
+        $out['id_spare'] = (string)new \MongoId();
         $out['id'] = '<input type="hidden" name="' . $formObject->marker . '[id]" value="' . (string)$formObject->id . '" />';
         return json_encode($out, JSON_PRETTY_PRINT);
+	}
+
+	private static function date ($date) {
+		if (is_object($date)) {
+    		$date = date('c', $date->sec);
+    	} elseif (empty($date)) {
+    		$date = '';
+    	} else {
+    		$date = date('c', strtotime($date));
+    	}
+    	return $date;
 	}
 
     public function sanitize ($formObject) {
