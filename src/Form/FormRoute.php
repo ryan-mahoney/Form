@@ -198,28 +198,27 @@ class FormRoute {
             if (!file_exists($filename)) {
                 $data = file_get_contents($rootProject . '/vendor/virtuecenter/build/static/form.hbs');
                 $formObject = $this->form->factory($form, false, $bundle);
-                ob_start();
-                echo '
-<form class="ui form segment" data-xhr="true" method="post">', "\n";
+                $buffer = '';
+                $buffer .= '
+<form class="ui form segment" data-xhr="true" method="post">' . "\n";
 
                 foreach ($formObject->fields as $field) {
-                    echo '
+                    $buffer .= '
     <div class="field">
-        <label>', ucwords(str_replace('_', ' ', $field['name'])), '</label>
+        <label>' . ucwords(str_replace('_', ' ', $field['name'])) . '</label>
         <div class="ui left labeled input">
-            {{{', $field['name'], '}}}
+            {{{' . $field['name'] . '}}}
             <div class="ui corner label">
                 <i class="icon asterisk"></i>
             </div>
         </div>
-    </div>', "\n";
+    </div>' . "\n";
                 }
-                echo '
+                $buffer .= '
     {{{id}}}
     <input type="submit" class="ui blue submit button" value="Submit" />
 </form>';
-                $generated = ob_get_clean();
-                $data = str_replace(['{{$form}}', '{{$generated}}'], [$form, $generated], $data);
+                $data = str_replace(['{{$form}}', '{{$generated}}'], [$form, $buffer], $data);
                 file_put_contents($filename, $data);
             }
             if ($url !== false) {
