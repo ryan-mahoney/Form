@@ -83,7 +83,7 @@ class FormRoute {
                 } else {
                     $this->separation->layout($path . '/' . $bundlePath . $form)->args($form, ['id' => $id])->template()->write($this->response->body);
                 }
-            })->name('form ' . $form);
+            })->name(ucfirst($form) . ': form');
             
             //update
             $this->slim->post($prefix . $bundlePath . '/' . $route . '/' . $form . '(/:id)', function ($id=false) use ($form, $bundle, $path, $namespace, $route, $prefix) {
