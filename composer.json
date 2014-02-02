@@ -1,22 +1,22 @@
 {
-    "name": "virtuecenter/form",
+    "name": "opine/form",
     "type": "library",
-    "description": "Generate form markup and perform CRUD functions",
+    "description": "Service for generating form markup to perform CRUD functions",
     "keywords": ["MongoDB"],
     "license": "MIT",
     "authors": [
         {
             "name": "Ryan Mahoney",
             "email": "ryan@virtuecenter.com",
-            "homepage": "http://www.virtuecenter.com",
+            "homepage": "http://opine-php.org",
             "role": "Developer"
         }
     ],
     "require": {
     	"php": ">=5.3.0",
-        "virtuecenter/field": "dev-master"
+        "opine/field": "dev-master"
     },
     "autoload": {
-        "psr-0": {"Form": "src/"}
+        "psr-4": {"Opine\\": "src/"}
     }
 }
