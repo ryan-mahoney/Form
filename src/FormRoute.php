@@ -2,7 +2,7 @@
 /**
  * Opine\FormRoute
  *
- * Copyright (c)2013 Ryan Mahoney, https://github.com/virtuecenter <ryan@virtuecenter.com>
+ * Copyright (c)2013, 2014 Ryan Mahoney, https://github.com/Opine-Org <ryan@virtuecenter.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -84,11 +84,11 @@ class FormRoute {
             }
             $forms = (array)json_decode(file_get_contents($cacheFile), true);
             if (isset($forms['managers'])) {
-            	$managers = $forms['managers'];
-            	$forms = [];
-            	foreach ($managers as $manager) {
-            		$forms[] = $manager['manager'];
-            	}
+                $managers = $forms['managers'];
+                $forms = [];
+                foreach ($managers as $manager) {
+                    $forms[] = $manager['manager'];
+                }
             }
         }
         if (!is_array($forms)) {
@@ -213,13 +213,13 @@ class FormRoute {
         foreach ($cache as $form) {
             $filename = $root . '/layouts/forms/' . $form . '.html';
             if (!file_exists($filename)) {
-                $data = file_get_contents($rootProject . '/vendor/virtuecenter/build/static/form.html');
+                $data = file_get_contents($rootProject . '/vendor/opine/build/static/form.html');
                 $data = str_replace(['{{$form}}'], [$form], $data);
                 file_put_contents($filename, $data);
             }
             $filename = $root . '/partials/forms/' . $form . '.hbs';
             if (!file_exists($filename)) {
-                $data = file_get_contents($rootProject . '/vendor/virtuecenter/build/static/form.hbs');
+                $data = file_get_contents($rootProject . '/vendor/opine/build/static/form.hbs');
                 $formObject = $this->form->factory($form, false, $bundle);
                 $buffer = '';
                 $buffer .= '
@@ -247,7 +247,7 @@ class FormRoute {
             if ($url !== false) {
                 $filename = $root . '/../app/forms/' . $form . '.yml';
                 if (!file_exists($filename)) {
-                    $data = file_get_contents($rootProject . '/vendor/virtuecenter/build/static/app-form.yml');
+                    $data = file_get_contents($rootProject . '/vendor/opine/build/static/app-form.yml');
                     $data = str_replace(['{{$form}}', '{{$url}}'], [$form, $url], $data);
                     file_put_contents($filename, $data);
                 }
@@ -257,7 +257,7 @@ class FormRoute {
     }
 
     public function upgrade ($root) {
-        $manifest = (array)json_decode(file_get_contents('https://raw.github.com/virtuecenter/form/master/available/manifest.json'), true);
+        $manifest = (array)json_decode(file_get_contents('https://raw.github.com/opine/form/master/available/manifest.json'), true);
         $upgraded = 0;
         foreach (glob($root . '/../forms/*.php') as $filename) {
             $lines = file($filename);
