@@ -102,6 +102,15 @@ class Form {
                     $function = $field['transformOut'];
                     $field['data'] = $function($field['data'], $formObject);
                 }
+            } else {
+                if (isset($field['default'])) {
+                    $default = $field['default'];
+                    if (is_callable($default)) {
+                        $field['data'] = $default($field);
+                    } else {
+                        $field['data'] = $default;
+                    }
+                }
             }
             $field['marker'] = $formObject->marker;
             $out[$field['name']] = $this->field->render($field['display'], $field, $formObject->document, $formObject->fields);
