@@ -143,6 +143,13 @@ class FormRoute {
                     $this->topic->publish($prefixTopic . $route . '-save', $context);
                 }
                 if ($this->post->statusCheck() == 'saved') {
+                    $this->topic->publish($prefixTopic . $bundleTopic . $route . '-' . $form . '-saved', $context);
+                    if (!empty($bundle)) {
+                        $this->topic->publish($bundleTopic . $route . '-saved', $context);
+                    }
+                    if (!empty($prefix)) {
+                        $this->topic->publish($prefixTopic . $route . '-saved', $context);
+                    }
                     $this->form->responseSuccess($formObject);
                 } else {
                     $this->form->responseError();    
