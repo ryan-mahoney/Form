@@ -39,6 +39,28 @@ class Form {
         $this->db = $db;
     }
 
+    public function after ($mode, $data) {
+        switch ($mode) {
+            case 'function':
+                $this->formObject->after = 'function';
+                $this->formObject->function = $data;
+                break;
+
+            case 'notice':
+                $this->formObject->after = 'notice';
+                $this->formObject->notice = $data;
+                break;
+
+            case 'redirect':
+                $this->formObject->after = 'redirect';
+                $this->formObject->redirect = $data;
+                break;
+
+            default:
+                throw new \Exception('Unknown form "after" mode set');
+        }
+    }
+
     public function factory ($form, $dbURI=false, $bundle='', $path='forms', $namespace='Form\\') {
         if (empty($bundle)) {
             $class = $this->root . '/../' . $path . '/' . $form . '.php';
