@@ -27,14 +27,14 @@ namespace Opine;
 class FormRoute {
     private $separation;
     private $post;
-    private $slim;
+    private $route;
     private $topic;
     private $response;
     private $field;
     public $cache = false;
 
-    public function __construct ($slim, $form, $field, $post, $separation, $topic, $response) {
-        $this->slim = $slim;
+    public function __construct ($route, $form, $field, $post, $separation, $topic, $response) {
+        $this->route = $route;
         $this->post = $post;
         $this->form = $form;
         $this->separation = $separation;
@@ -52,7 +52,7 @@ class FormRoute {
         if ($bundle != '') {
             $bundlePath = '/' . $bundle;
         }
-        $this->slim->get($prefix . $bundlePath . '/json-' . $route . '/:form(/:id)', function ($form, $id=false) use ($bundle, $namespace, $path) {
+        $callback = function ($form, $id=false) use ($bundle, $namespace, $path) {
             if (isset($_GET['id']) && $id === false) {
                 $id = $_GET['id'];
             }
@@ -67,7 +67,9 @@ class FormRoute {
                 $tail = ');';
                }
             echo $head, $this->form->json($formObject, $id), $tail;
-        });
+        };
+        $this->route->get($prefix . $bundlePath . '/json-' . $route . '/{form}', $callback);
+        $this->route->get($prefix . $bundlePath . '/json-' . $route . '/{form}/{id}', $callback);
     }
 
     public function app ($root, $bundle='', $path='forms', $namespace='Form\\', $route='form', $prefix='') {
@@ -96,7 +98,7 @@ class FormRoute {
         }
         foreach ($forms as $form) {
             //view
-            $this->slim->get($prefix . $bundlePath . '/' . $route . '/' . $form . '(/:id)', function ($id=false) use ($form, $bundle, $path) {
+            $callback = function ($id=false) use ($form, $bundle, $path) {
                 $bundlePath = '';
                 if ($bundle != '') {
                     $bundlePath = $bundle . '/';
@@ -106,10 +108,12 @@ class FormRoute {
                 } else {
                     $this->separation->layout($path . '/' . $bundlePath . $form)->args($form, ['id' => $id])->template()->write($this->response->body);
                 }
-            })->name(ucfirst($form) . ': form');
-            
+            };
+            $this->route->get($prefix . $bundlePath . '/' . $route . '/' . $form, $callback);
+            $this->route->get($prefix . $bundlePath . '/' . $route . '/' . $form . '/{id}', $callback);
+
             //update
-            $this->slim->post($prefix . $bundlePath . '/' . $route . '/' . $form . '(/:id)', function ($id=false) use ($form, $bundle, $path, $namespace, $route, $prefix) {
+            $callback = function ($id=false) use ($form, $bundle, $path, $namespace, $route, $prefix) {
                 $formObject = $this->form->factory($form, $id, $bundle, $path, $namespace);
                 if ($id === false) {
                     if (isset($this->post->{$formObject->marker}['id'])) {
@@ -154,10 +158,12 @@ class FormRoute {
                 } else {
                     $this->form->responseError();    
                 }
-            });
+            };
+            $this->route->post($prefix . $bundlePath . '/' . $route . '/' . $form, $callback);
+            $this->route->post($prefix . $bundlePath . '/' . $route . '/' . $form . '/{id}', $callback);
 
             //delete
-            $this->slim->delete($prefix . $bundlePath . '/' . $route . '/' . $form . '(/:id)', function ($dbURI=false) use ($form, $bundle, $path, $namespace, $route, $prefix) {
+            $callback = function ($dbURI=false) use ($form, $bundle, $path, $namespace, $route, $prefix) {
                 $formObject = $this->form->factory($form, $dbURI, $bundle, $path, $namespace);
                 if ($dbURI === false) {
                     if (isset($this->post->{$formObject->marker}['id'])) {
@@ -190,7 +196,9 @@ class FormRoute {
                 } else {
                     $this->form->responseError();    
                 }
-            });
+            };
+            $this->route->delete($prefix . $bundlePath . '/' . $route . '/' . $form, $callback);
+            $this->route->delete($prefix . $bundlePath . '/' . $route . '/' . $form . '/{id}', $callback);
         }
     }
 

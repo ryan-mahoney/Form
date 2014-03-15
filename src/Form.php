@@ -30,6 +30,7 @@ class Form {
     private $response;
     private $post;
     private $db;
+    private $formStorage;
 
     public function __construct ($root, $field, $post, $db, $response) {
         $this->root = $root;
@@ -37,23 +38,35 @@ class Form {
         $this->post = $post;
         $this->response = $response;
         $this->db = $db;
+        $this->formStorage = [];
     }
 
-    public function after ($mode, $data) {
+    public function stored ($form) {
+        if (!isset($this->formStorage[$form])) {
+            return false;
+        }
+        return $this->formStorage[$form];
+    }
+
+    public function after ($form, $mode, $data) {
+        $form = $this->stored($form);
+        if ($form === false) {
+            return false;
+        }
         switch ($mode) {
             case 'function':
-                $this->formObject->after = 'function';
-                $this->formObject->function = $data;
+                $form->after = 'function';
+                $form->function = $data;
                 break;
 
             case 'notice':
-                $this->formObject->after = 'notice';
-                $this->formObject->notice = $data;
+                $form->after = 'notice';
+                $form->notice = $data;
                 break;
 
             case 'redirect':
-                $this->formObject->after = 'redirect';
-                $this->formObject->redirect = $data;
+                $form->after = 'redirect';
+                $form->redirect = $data;
                 break;
 
             default:
@@ -95,6 +108,7 @@ class Form {
         } else {
             $formObject->id = $dbURI;
         }
+        $this->formStorage[$form] = $formObject;
         return $formObject;
     }
 
