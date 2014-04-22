@@ -264,11 +264,11 @@ class Form {
                 $response['function'] = $formObject->function;
                 break;
         }
-        $this->response->body = json_encode($response, JSON_HEX_AMP);
+        echo json_encode($response, JSON_HEX_AMP);
     }
 
     public function responseError () {
-        $this->response->body = json_encode([
+        echo json_encode([
             'success' => false,
             'errors' => $this->post->errorsGet()
         ], JSON_HEX_AMP);
