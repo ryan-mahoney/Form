@@ -65,7 +65,7 @@ class FormRoute {
             } elseif (isset($_GET['callback'])) {
                 $head = $_GET['callback'] . '(';
                 $tail = ');';
-               }
+            }
             echo $head, $this->form->json($formObject, $id), $tail;
         };
         $this->route->get($prefix . $bundlePath . '/json-' . $route . '/{form}', $callback);
@@ -99,14 +99,17 @@ class FormRoute {
         foreach ($forms as $form) {
             //view
             $callback = function ($id=false) use ($form, $bundle, $path) {
+                echo 'SHIT: ', $id;
+                print_r($_GET);
+                exit;
                 $bundlePath = '';
                 if ($bundle != '') {
                     $bundlePath = $bundle . '/';
                 }
                 if ($id === false) {
-                    $this->separation->layout($path. '/' . $bundlePath . $form)->template()->write($this->response->body);
+                    $this->separation->app()->layout($path. '/' . $bundlePath . $form)->template()->write();
                 } else {
-                    $this->separation->layout($path . '/' . $bundlePath . $form)->args($form, ['id' => $id])->template()->write($this->response->body);
+                    $this->separation->app()->layout($path . '/' . $bundlePath . $form)->args($form, ['id' => $id])->template()->write();
                 }
             };
             $this->route->get($prefix . $bundlePath . '/' . $route . '/' . $form, $callback);
