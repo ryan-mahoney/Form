@@ -1,22 +1,26 @@
 {
-    "name": "opine/form",
+    "name": "opine\/form",
     "type": "library",
     "description": "Service for generating form markup to perform CRUD functions",
-    "keywords": ["MongoDB"],
+    "keywords": [
+        "MongoDB"
+    ],
     "license": "MIT",
     "authors": [
         {
             "name": "Ryan Mahoney",
             "email": "ryan@virtuecenter.com",
-            "homepage": "http://opine-php.org",
+            "homepage": "http:\/\/opine-php.org",
             "role": "Developer"
         }
     ],
     "require": {
-    	"php": ">=5.4.0",
-        "opine/field": "dev-master"
+        "php": ">=5.4.0",
+        "opine\/field": "1.0.1"
     },
     "autoload": {
-        "psr-4": {"Opine\\": "src/"}
+        "psr-4": {
+            "Opine\\": "src\/"
+        }
     }
 }
