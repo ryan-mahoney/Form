@@ -99,9 +99,6 @@ class FormRoute {
         foreach ($forms as $form) {
             //view
             $callback = function ($id=false) use ($form, $bundle, $path) {
-                echo 'SHIT: ', $id;
-                print_r($_GET);
-                exit;
                 $bundlePath = '';
                 if ($bundle != '') {
                     $bundlePath = $bundle . '/';
