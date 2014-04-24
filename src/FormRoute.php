@@ -110,6 +110,7 @@ class FormRoute {
                 }
             };
             $this->route->get($prefix . $bundlePath . '/' . $route . '/' . $form, $callback);
+            $this->route->get($prefix . $bundlePath . '/' . $route . '/' . $form . '.html', $callback);
             $this->route->get($prefix . $bundlePath . '/' . $route . '/' . $form . '/{id}', $callback);
 
             //update
