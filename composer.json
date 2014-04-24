@@ -16,7 +16,7 @@
     ],
     "require": {
         "php": ">=5.4.0",
-        "opine\/field": "1.0.1"
+        "opine\/field": "dev-master"
     },
     "autoload": {
         "psr-4": {
