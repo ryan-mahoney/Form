@@ -125,7 +125,8 @@ class FormRoute {
                 }
                 $context = [
                     'dbURI' => $id,
-                    'formMarker' => $formObject->marker
+                    'formMarker' => $formObject->marker,
+                    'formObject' => $formObject
                 ];
                 if (!$this->form->validate($formObject)) {
                     $this->form->responseError();
