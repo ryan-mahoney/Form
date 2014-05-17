@@ -29,11 +29,10 @@ class FormRoute {
     private $post;
     private $route;
     private $topic;
-    private $response;
     private $field;
     public $cache = false;
 
-    public function __construct ($route, $form, $field, $post, $separation, $topic, $response) {
+    public function __construct ($route, $form, $field, $post, $separation, $topic) {
         $this->route = $route;
         $this->post = $post;
         $this->form = $form;

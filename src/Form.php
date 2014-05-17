@@ -27,16 +27,14 @@ namespace Opine;
 class Form {
     private $root;
     private $field;
-    private $response;
     private $post;
     private $db;
     private $formStorage;
 
-    public function __construct ($root, $field, $post, $db, $response) {
+    public function __construct ($root, $field, $post, $db) {
         $this->root = $root;
         $this->field = $field;
         $this->post = $post;
-        $this->response = $response;
         $this->db = $db;
         $this->formStorage = [];
     }
