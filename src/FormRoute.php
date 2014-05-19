@@ -38,7 +38,6 @@ class FormRoute {
         $this->form = $form;
         $this->separation = $separation;
         $this->topic = $topic;
-        $this->response = $response;
         $this->field = $field;
     }
 
