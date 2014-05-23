@@ -102,9 +102,9 @@ class FormRoute {
                     $bundlePath = $bundle . '/';
                 }
                 if ($id === false) {
-                    $this->separation->app()->layout($path. '/' . $bundlePath . $form)->template()->write();
+                    $this->separation->app('app/' . $path . '/' . $bundlePath . $form)->layout($path. '/' . $bundlePath . $form)->template()->write();
                 } else {
-                    $this->separation->app()->layout($path . '/' . $bundlePath . $form)->args($form, ['id' => $id])->template()->write();
+                    $this->separation->app('app/' . $path . '/' . $bundlePath . $form)->layout($path . '/' . $bundlePath . $form)->args($form, ['id' => $id])->template()->write();
                 }
             };
             $this->route->get($prefix . $bundlePath . '/' . $route . '/' . $form, $callback);
