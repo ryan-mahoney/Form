@@ -11,4 +11,32 @@ services:
         class:     'Opine\Mongo'
         arguments: ['@config', '@topic']
     yamlSlow:
-        class:     'Symfony\Component\Yaml\Yaml
+        class:     'Symfony\Component\Yaml\Yaml'
+    formRoute:
+        class:     'Opine\FormRoute'
+        arguments: ['@route', '@form', '@field', '@post', '@separation', '@topic', '%root%']
+    form:
+        class:     'Opine\Form'
+        arguments: ['%root%', '@field', '@post', '@db', '@separation', '@topic']
+    separation:
+        class:     'Opine\Separation'
+        arguments: ['%root%', '@handlebars', '@cache', '@config', '@yamlSlow', '@route']
+    handlebars:
+        class:     'Handlebars\Handlebars'
+    field:
+        class:     'Opine\Field'
+        arguments: ['%root%', '@container']
+    fieldRoute:
+        class:     'Opine\FieldRoute'
+    post:
+        class:     'Opine\HTTPPost'
+    route:
+        class:     'Opine\Route'
+        arguments: ['@fastrouteCollector']
+    fastrouteCollector:
+        class:     'FastRoute\RouteCollector'
+        arguments: ['@fastrouteParser', '@fastrouteGenerator']
+    fastrouteParser:
+        class:     'FastRoute\RouteParser\Std'
+    fastrouteGenerator:
+        class:     'FastRoute\DataGenerator\GroupCountBased'

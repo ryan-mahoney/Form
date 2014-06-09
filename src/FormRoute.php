@@ -30,33 +30,32 @@ class FormRoute {
     private $route;
     private $topic;
     private $field;
+    private $root;
     public $cache = false;
 
-    public function __construct ($route, $form, $field, $post, $separation, $topic) {
+    public function __construct ($route, $form, $field, $post, $separation, $topic, $root) {
         $this->route = $route;
         $this->post = $post;
         $this->form = $form;
         $this->separation = $separation;
         $this->topic = $topic;
         $this->field = $field;
+        $this->root = $root;
     }
 
     public function cacheSet ($cache) {
         $this->cache = $cache;
     }
 
-    public function json ($bundle='', $path='forms', $namespace='Form\\', $route='form', $prefix='') {
-        $bundlePath = '';
-        if ($bundle != '') {
-            $bundlePath = '/' . $bundle;
-        }
-        $callback = function ($form, $id=false) use ($bundle, $namespace, $path) {
+    public function json () {
+        $callback = function ($marker, $id=false) {
+            $classPath = $this->form->markerToClassPath($marker);
             if (isset($_GET['id']) && $id === false) {
                 $id = $_GET['id'];
             }
-            $formObject = $this->form->factory($form, $id, $bundle, $path, $namespace);
-            $head = null;
-            $tail = null;
+            $formObject = $this->form->factory($classPath, $id);
+            $head = '';
+            $tail = '';
             if (isset($_GET['pretty'])) {
                 $head = '<html><head></head><body style="margin:0; border:0; padding: 0"><textarea wrap="off" style="overflow: auto; margin:0; border:0; padding: 0; width:100%; height: 100%">';
                 $tail = '</textarea></body></html>';
@@ -66,147 +65,72 @@ class FormRoute {
             }
             echo $head, $this->form->json($formObject, $id), $tail;
         };
-        $this->route->get($prefix . $bundlePath . '/json-' . $route . '/{form}', $callback);
-        $this->route->get($prefix . $bundlePath . '/json-' . $route . '/{form}/{id}', $callback);
+        $this->route->get('/json-form/{marker}', $callback);
+        $this->route->get('/json-form/{marker}/{id}', $callback);
     }
 
-    public function app ($root, $bundle='', $path='forms', $namespace='Form\\', $route='form', $prefix='') {
-        $bundlePath = '';
-        if ($bundle != '') {
-            $bundlePath = '/' . $bundle;
-        }
-        if (!empty($this->cache) && $bundle == '' && $route == 'form') {
-            $forms = $this->cache;
-        } else {
-            $cacheFile = $root . '/../' . $path . '/cache.json';
-            if (!file_exists($cacheFile)) {
-                return;
-            }
-            $forms = (array)json_decode(file_get_contents($cacheFile), true);
-            if (isset($forms['managers'])) {
-                $managers = $forms['managers'];
-                $forms = [];
-                foreach ($managers as $manager) {
-                    $forms[] = $manager['manager'];
-                }
-            }
-        }
-        if (!is_array($forms)) {
-            return;
-        }
-        foreach ($forms as $form) {
-            //view
-            $callback = function ($id=false) use ($form, $bundle, $path) {
-                $bundlePath = '';
-                if ($bundle != '') {
-                    $bundlePath = $bundle . '/';
-                }
-                if ($id === false) {
-                    $this->separation->app('app/' . $path . '/' . $bundlePath . $form)->layout($path. '/' . $bundlePath . $form)->template()->write();
-                } else {
-                    $this->separation->app('app/' . $path . '/' . $bundlePath . $form)->layout($path . '/' . $bundlePath . $form)->args($form, ['id' => $id])->template()->write();
-                }
-            };
-            $this->route->get($prefix . $bundlePath . '/' . $route . '/' . $form, $callback);
-            $this->route->get($prefix . $bundlePath . '/' . $route . '/' . $form . '.html', $callback);
-            $this->route->get($prefix . $bundlePath . '/' . $route . '/' . $form . '/{id}', $callback);
+    public function app () {
+        //view
+        $callback = function ($form, $id=false) {
+            $this->form->view([
+                'form' => 'form/' . $form . '.php',
+                'app' => 'app/forms/' . strtolower($form) . '.yml',
+                'layout' => 'public/layouts/forms/' . strtolower($form) . '.html'
+            ], $id);
+        };
+        $this->route->get('/form/{form}', $callback);
+        $this->route->get('/form/{form}.html', $callback);
+        $this->route->get('/form/{form}/{id}', $callback);
+        $callback = function ($bundle, $form, $id=false) {
+            $this->form->view([
+                'form' => 'bundles/' . $bundle . '/forms/' . $form . '.php',
+                'app' => 'bundles/' . $bundle . '/app/forms/' . strtolower($form) . '.yml',
+                'layout' => 'public/layouts/' . $bundle . '/forms/' . strtolower($form) . '.html'
+            ], $id);
+        };
+        $this->route->get('/subform/{bundle}/{form}', $callback);
+        $this->route->get('/subform/{bundle}/{form}.html', $callback);
+        $this->route->get('/subform/{bundle}/{form}/{id}', $callback);
 
-            //update
-            $callback = function ($id=false) use ($form, $bundle, $path, $namespace, $route, $prefix) {
-                $formObject = $this->form->factory($form, $id, $bundle, $path, $namespace);
-                if ($id === false) {
-                    if (isset($this->post->{$formObject->marker}['id'])) {
-                        $id = $this->post->{$formObject->marker}['id'];
-                    } else {
-                        throw new \Exception('ID not supplied in post.');
-                    }
-                }
-                $context = [
-                    'dbURI' => $id,
-                    'formMarker' => $formObject->marker,
-                    'formObject' => $formObject
-                ];
-                if (!$this->form->validate($formObject)) {
-                    $this->form->responseError();
-                    return;
-                }
-                $bundleTopic = '';
-                if (!empty($bundle)) {
-                    $bundleTopic = $bundle . '-';
-                }
-                $prefixTopic = '';
-                if (!empty($prefix)) {
-                    $prefixTopic = trim($prefix, '/') . '-';
-                }
-                $this->form->sanitize($formObject);
-                $this->topic->publish($prefixTopic . $bundleTopic . $route . '-' . $form . '-save', $context);
-                if (!empty($bundle)) {
-                    $this->topic->publish($bundleTopic . $route . '-save', $context);
-                }
-                if (!empty($prefix)) {
-                    $this->topic->publish($prefixTopic . $route . '-save', $context);
-                }
-                if ($this->post->statusCheck() == 'saved') {
-                    $this->topic->publish($prefixTopic . $bundleTopic . $route . '-' . $form . '-saved', $context);
-                    if (!empty($bundle)) {
-                        $this->topic->publish($bundleTopic . $route . '-saved', $context);
-                    }
-                    if (!empty($prefix)) {
-                        $this->topic->publish($prefixTopic . $route . '-saved', $context);
-                    }
-                    $this->form->responseSuccess($formObject);
-                } else {
-                    $this->form->responseError();    
-                }
-            };
-            $this->route->post($prefix . $bundlePath . '/' . $route . '/' . $form, $callback);
-            $this->route->post($prefix . $bundlePath . '/' . $route . '/' . $form . '/{id}', $callback);
+        //update
+        $callback = function ($form, $id=false) {
+            $this->form->upsert($this->formPath($form), $id);
+        };
+        $this->route->post('/form/{form}', $callback);
+        $this->route->post('/form/{form}/{id}', $callback);
+        $callback = function ($bundle, $form, $id=false) {
+            $this->form->upsert($this->bundleFormPath(), $id);
+        };
+        $this->route->post('/subform/{bundle}/{form}', $callback);
+        $this->route->post('/subform/{bundle}/{form}/{id}', $callback);
 
-            //delete
-            $callback = function ($dbURI=false) use ($form, $bundle, $path, $namespace, $route, $prefix) {
-                $formObject = $this->form->factory($form, $dbURI, $bundle, $path, $namespace);
-                if ($dbURI === false) {
-                    if (isset($this->post->{$formObject->marker}['id'])) {
-                        $dbURI = $this->post->{$formObject->marker}['id'];
-                    } else {
-                        throw new \Exception('ID not supplied in post.');
-                    }
-                }
-                $context = [
-                    'dbURI' => $dbURI,
-                    'formMarker' => $formObject->marker
-                ];
-                $bundleTopic = '';
-                if (!empty($bundle)) {
-                    $bundleTopic = $bundle . '-';
-                }
-                $prefixTopic = '';
-                if (!empty($prefix)) {
-                    $prefixTopic = trim($prefix, '/') . '-';
-                }
-                $this->topic->publish($prefixTopic . $bundleTopic . $route . '-' . $form . '-delete', $context);
-                if (!empty($bundle)) {
-                    $this->topic->publish($bundleTopic . $route . '-delete', $context);
-                }
-                if (!empty($prefix)) {
-                    $this->topic->publish($prefixTopic . $route . '-delete', $context);
-                }
-                if ($this->post->statusCheck() == 'deleted') {
-                    $this->form->responseSuccess($formObject);
-                } else {
-                    $this->form->responseError();    
-                }
-            };
-            $this->route->delete($prefix . $bundlePath . '/' . $route . '/' . $form, $callback);
-            $this->route->delete($prefix . $bundlePath . '/' . $route . '/' . $form . '/{id}', $callback);
-        }
+        //delete
+        $callback = function ($form, $dbURI) {
+            $this->form->delete($this->formPath($form), $dbURI);
+        };
+        $this->route->delete('/form/{form}/{id}', $callback);
+        $callback = function ($bundle, $form, $dbURI) {
+            $this->form->delete($this->bundleFormPath($bundle, $form), $dbURI);
+        };
+        $this->route->delete('/subform/{bundle}/{form}/{id}', $callback);
+    }
+
+    private function formPath ($form) {
+        return 'forms/' . $form . '.php';
+    }
+
+    private function bundleFormPath ($bundle, $path) {
+        return 'bundles/' . $bundle . '/forms/' . $form . '.php'; 
     }
 
     private static function stubRead ($name, &$collection, $url, $root) {
         return str_replace(['{{$url}}', '{{$plural}}', '{{$singular}}'], [$url, $collection['p'], $collection['s']], $data);
     }
 
-    public function build ($root, $url=false, $bundle='') {
+    public function build ($root=false, $url=false, $bundle='') {
+        if ($root === false) {
+            $root = $this->root;
+        }
         $rootProject = $root . '/..';
         $bundlePath = '';
         if ($bundle != '') {
@@ -271,7 +195,10 @@ class FormRoute {
         return $json;
     }
 
-    public function upgrade ($root) {
+    public function upgrade ($root=false) {
+        if ($root === false) {
+            $root = $this->root;
+        }
         $manifest = (array)json_decode(file_get_contents('https://raw.github.com/opine/form/master/available/manifest.json'), true);
         $upgraded = 0;
         foreach (glob($root . '/../forms/*.php') as $filename) {
@@ -318,3 +245,5 @@ class FormRoute {
         echo 'Upgraded ', $upgraded, ' forms.', "\n";
     }
 }
+
+class FormPathException extends \Exception {}

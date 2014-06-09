@@ -1,68 +1,60 @@
 <?php
-/*
- * @version .1
- * @link https://raw.github.com/opine/form/master/available/contact.php
- * @mode upgrade
- */
 namespace Form;
 
-class contact {
-    public function __construct ($field) {
-        $this->field = $field;
-    }
-    public $storage = [
-        'collection'    => 'contacts',
-        'key'            => '_id'
-    ];
-    public $after = 'notice';
-    //public $redirect = 'http://www.google.com';
-    public $notice = 'Your contact request has been received';
-    //public $noticeDetails = 'Life is good.';
-    //public $function = 'contact';
+class Contact {
+	public function __construct ($field) {
+		$this->field = $field;
+	}
+	public $storage = [
+		'collection'	=> 'contacts',
+		'key'			=> '_id'
+	];
+	public $after = 'notice';
+	public $notice = 'Your message was saved';
 
-    function first_nameField() {
-        return [
-            'name'        => 'first_name',
-            'placeholder' => 'First Name',
-            'display'    => $this->field->inputText(),
-            'required'     => true
-        ];
-    }
-    
-    function last_nameField() {
-        return [
-            'name'        => 'last_name',
-            'placeholder' => 'Last Name',
-            'label'        => 'Last Name',
-            'display'    => $this->field->inputText(),
-            'required'    => true
-        ];
-    }
+	function first_nameField() {
+		return [
+			'name'		=> 'first_name',
+			'placeholder' => 'First Name',
+			'display'	=> 'InputText',
+			'required' 	=> true
+		];
+	}
+	
+	function last_nameField() {
+		return [
+			'name'		=> 'last_name',
+			'placeholder' => 'Last Name',
+			'label'		=> 'Last Name',
+			'display'	=> 'InputText',
+			'required'	=> true
+		];
+	}
 
-    function phoneField() {
-        return [
-            'name'        => 'phone',
-            'placeholder'    => 'Phone',
-            'display'    => $this->field->inputText(),
-            'required'    => true
-        ];
-    }
-    
-    function emailField() {
-        return [
-            'name'        => 'email',
-            'placeholder'        => 'Email Address',
-            'display'    => $this->field->inputText(),
-            'required'    => true
-        ];
-    }
-    
-    function messageField() {
-        return [
-            'name'        => 'message',
-            'placeholder'        => 'Enter your message here',
-            'display'    => $this->field->textarea(),
-            'required'    => true
-        ];
-    }
+	function phoneField() {
+		return [
+			'name'		=> 'phone',
+			'placeholder'	=> 'Phone',
+			'display'	=> 'InputText',
+			'required'	=> true
+		];
+	}
+	
+	function emailField() {
+		return [
+			'name'		=> 'email',
+			'placeholder'		=> 'Email Address',
+			'display'	=> 'InputText',
+			'required'	=> true
+		];
+	}
+	
+	function messageField() {
+		return [
+			'name'		=> 'message',
+			'placeholder'		=> 'Enter your message here',
+			'display'	=> 'Textarea',
+			'required'	=> true
+		];
+	}
 }

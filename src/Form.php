@@ -30,13 +30,27 @@ class Form {
     private $post;
     private $db;
     private $formStorage;
+    private $separation;
+    private $topic;
+    private $showTopics = false;
+    private $showMarker = false;
 
-    public function __construct ($root, $field, $post, $db) {
+    public function __construct ($root, $field, $post, $db, $separation, $topic) {
         $this->root = $root;
         $this->field = $field;
         $this->post = $post;
         $this->db = $db;
         $this->formStorage = [];
+        $this->separation = $separation;
+        $this->topic = $topic;
+    }
+
+    public function showTopics () {
+        $this->showTopics = true;
+    }
+
+    public function showMarker () {
+        $this->showMarker = true;
     }
 
     public function stored ($form) {
@@ -72,28 +86,22 @@ class Form {
         }
     }
 
-    public function factory ($form, $dbURI=false, $bundle='', $path='forms', $namespace='Form\\') {
-        if (empty($bundle)) {
-            $class = $this->root . '/../' . $path . '/' . $form . '.php';
-        } else {
-            $class = $this->root . '/../bundles/' . $bundle . '/' . $path . '/' . $form . '.php';
-        }
-        if (!file_exists($class)) {
-            throw new \Exception ($class . ': unknown file.');
-        }
-        require_once($class);
-        if (empty($bundle)) {
-            $className = $namespace . $form;
-        } else {
-            $className = $bundle . '\\' . $namespace . $form; 
-        }
+    public function factory ($path, $dbURI=false) {
+        $type = $this->formType($path);
+        $class = array_pop(explode('/', rtrim($path, '.php')));
+        $bundle = false;
+        $className = $this->bundleNameSpace($path, $bundle) . $type . '\\' . $class;
         if (!class_exists($className)) {
-            throw new \Exception ($className . ': unknown class.');
+            throw new FormUnknownException($className . ': unknown class.');
         }
         $formObject = new $className($this->field);
         $formObject->fields = $this->parseFieldMethods($formObject);
         $formObject->db = $this->db;
-        $formObject->marker = strtolower(str_replace('\\', '__', $form));
+        $formObject->marker = str_replace('\\', '__', $className);
+        $formObject->bundle = $bundle;
+        if ($this->showMarker === true) {
+            echo 'Form marker: ', $formObject->marker, "\n";
+        }
         $formObject->document = new \ArrayObject();
         if ($dbURI !== false) {
             $document = $this->db->documentStage($dbURI)->current();
@@ -106,7 +114,7 @@ class Form {
         } else {
             $formObject->id = $dbURI;
         }
-        $this->formStorage[$form] = $formObject;
+        $this->formStorage[$formObject->marker] = $formObject;
         return $formObject;
     }
 
@@ -262,13 +270,167 @@ class Form {
                 $response['function'] = $formObject->function;
                 break;
         }
-        echo json_encode($response, JSON_HEX_AMP);
+        return json_encode($response, JSON_HEX_AMP);
     }
 
     public function responseError () {
-        echo json_encode([
+        return json_encode([
             'success' => false,
             'errors' => $this->post->errorsGet()
         ], JSON_HEX_AMP);
     }
+
+    private function validatePaths (Array &$paths) {
+        foreach (['form', 'layout', 'app'] as $type) {
+            if (!isset($paths[$type])) {
+                throw new FormPathException('Can not find ' . $type);
+            }
+        }
+        if (!isset($paths['class'])) {
+            $type = $this->formType($paths['form']);
+            $class = array_pop(explode('/', rtrim($paths['form'], '.php')));
+            $paths['class'] = $this->bundleNameSpace($paths['form']) . $type . '\\' . $class;
+        }
+        if (!isset($paths['name'])) {
+            $paths['name'] = $class;
+        }
+    }
+
+    private function formType ($form) {
+        if (substr_count($form, 'managers/') > 0) {
+            return 'Manager';
+        }
+        return 'Form';
+    }
+
+    private function bundleNameSpace ($path, &$bundle='') {
+        $parts = explode('/', $path);
+        $length = count($parts);
+        for ($i=0; $i < $length; $i++) {
+            if ($parts[$i] == 'bundles') {
+                $bundle = $parts[($i + 1)];
+                return $bundle . '\\';
+            }
+        }
+        return '';
+    }
+
+    public function view (Array $paths, $id=false) {
+        $this->validatePaths($paths);
+        $this->separation->app($paths['app'])->
+            layout($paths['layout'])->
+            args($paths['name'], ['id' => $id])->
+            template()->
+            write();
+    }
+
+    public function viewJson ($formClass, $id=false) {
+        $formObject = $this->form->factory($form, $id);
+        echo $this->form->json($formObject, $id);
+    }
+
+    public function upsert ($formClass, $id=false) {
+        $formObject = $this->factory($formClass, $id);
+        if ($id === false) {
+            if (isset($this->post->{$formObject->marker}['id'])) {
+                $id = $this->post->{$formObject->marker}['id'];
+            } else {
+                throw new \Exception('ID not supplied in post.');
+            }
+        }
+        $context = [
+            'dbURI' => $id,
+            'formMarker' => $formObject->marker,
+            'formObject' => $formObject
+        ];
+        if (!$this->validate($formObject)) {
+            return $this->responseError();
+        }
+        $this->sanitize($formObject);
+        $topic = $formObject->marker . '-save';
+        $this->showTopic($topic);
+        $this->topic->publish($topic, $context);
+        $this->topic->publish('Form-save', $context);
+        if ($formObject->bundle !== false) {
+            $this->topic->publish($formObject->bundle . '-Form-save');
+        }
+        if ($this->post->statusCheck() == 'saved') {
+            $topic = $formObject->marker . '-saved';
+            $this->topic->publish('Form-saved', $context);
+            if ($formObject->bundle !== false) {
+                $this->topic->publish($formObject->bundle . '-Form-saved');
+            }
+            $this->showTopic($topic);
+            $this->topic->publish($topic, $context);
+            return $this->responseSuccess($formObject);
+        } else {
+            return $this->responseError();    
+        }
+    }
+
+    private function showTopic ($topic) {
+        if ($this->showTopics === false) {
+            return;
+        }
+        echo $topic, "\n";
+    }
+
+    public function delete ($formClass, $id) {
+        $formObject = $this->factory($formClass, $id);
+        if ($id === false) {
+            throw new \Exception('ID not supplied in post.');
+        }
+        $context = [
+            'dbURI' => $id,
+            'formMarker' => $formObject->marker,
+            'formObject' => $formObject
+        ];
+        if (!$this->validate($formObject)) {
+            return $this->responseError();
+        }
+        $this->sanitize($formObject);
+        $topic = $formObject->marker . '-delete';
+        $this->showTopic($topic);
+        $this->topic->publish($topic, $context);
+        $this->topic->publish('Form-delete', $context);
+        if ($formObject->bundle !== false) {
+            $this->topic->publish($formObject->bundle . '-Form-delete');
+        }
+        if ($this->post->statusCheck() == 'deleted') {
+            $topic = $formObject->marker . '-deleted';
+            $this->topic->publish('Form-deleted', $context);
+            if ($formObject->bundle !== false) {
+                $this->topic->publish($formObject->bundle . '-Form-deleted');
+            }
+            $this->showTopic($topic);
+            $this->topic->publish($topic, $context);
+            return $this->responseSuccess($formObject);
+        } else {
+            return $this->responseError();    
+        }
+    }
+
+    public function markerToClassPath ($marker) {
+        $pieces = explode('__', $marker);
+        $count = count($pieces);
+        $type = $pieces[($count - 2)];
+        if ($type == 'Form') {
+            $type = 'forms';
+        } elseif ($type == 'Manager') {
+            $type = 'managers';
+        } else {
+            throw new FormUnknownTypeException($marker);
+        }
+        if ($count == 2) {
+            return $type . '/' . $pieces[1] . '.php';
+        } elseif ($count == 3) {
+            return 'bundles/' . $pieces[0] . '/' . $type . '/' . $pieces[2] . '.php';
+        } else {
+            throw new FormBadMarkerException($marker);
+        }
+    }
 }
+
+class FormUnknownException extends \Exception {}
+class FormUnknownTypeException extends \Exception {}
+class FormBadMarkerException extends \Exception {}

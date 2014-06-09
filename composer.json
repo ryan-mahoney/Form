@@ -6,6 +6,7 @@
         "MongoDB"
     ],
     "license": "MIT",
+    "minimum-stability": "dev",
     "authors": [
         {
             "name": "Ryan Mahoney",
@@ -16,11 +17,26 @@
     ],
     "require": {
         "php": ">=5.4.0",
-        "opine\/field": "dev-master"
+        "phpunit\/phpunit": "3.7.32",
+        "opine\/field": "dev-master",
+        "opine\/http": "dev-master",
+        "opine\/separation": "dev-master",
+        "opine\/pubsub": "dev-master",
+        "opine\/container": "dev-master",
+        "opine\/db": "dev-master",
+        "opine\/route": "dev-master"
     },
     "autoload": {
         "psr-4": {
             "Opine\\": "src\/"
-        }
+        },
+        "classmap": [
+            "forms",
+            "managers",
+            "bundles/Manager/forms",
+            "bundles/Manager/managers",
+            "bundles/Sample/forms",
+            "bundles/Sample/managers"
+        ]
     }
 }
