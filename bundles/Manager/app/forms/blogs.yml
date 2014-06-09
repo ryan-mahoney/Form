@@ -1,0 +1,7 @@
+js:
+
+binding:
+    form:
+        url: '%dataAPI%/json-form/Manager__Blogs'
+        partial: 'Manager/forms/blogs.hbs'
+        type: 'Form'

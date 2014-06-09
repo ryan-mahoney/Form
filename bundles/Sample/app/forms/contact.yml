@@ -1,0 +1,11 @@
+imports:
+ - base.yml
+ 
+js:
+
+binding:
+    contact:
+        url: '%dataAPI%/json-form/contact'
+        args: []
+        partial: 'forms/contact.hbs'
+        type: 'Form'
