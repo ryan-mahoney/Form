@@ -12,7 +12,6 @@
 namespace Sample\Manager;
 
 class Blogs {
-    private $field = false;
     public $collection = 'blogs';
     public $title = 'Blogs';
     public $titleField = 'title';
@@ -29,10 +28,6 @@ class Blogs {
         'collection' => 'blogs',
         'key' => '_id'
     ];
-
-    public function __construct ($field=false) {
-        $this->field = $field;
-    }
     
     function titleField () {
         return [

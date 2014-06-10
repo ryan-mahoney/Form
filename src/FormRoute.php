@@ -49,11 +49,11 @@ class FormRoute {
 
     public function json () {
         $callback = function ($marker, $id=false) {
-            $classPath = $this->form->markerToClassPath($marker);
+            $formObject = $this->form->markerToClass($marker);
             if (isset($_GET['id']) && $id === false) {
                 $id = $_GET['id'];
             }
-            $formObject = $this->form->factory($classPath, $id);
+            $formObject = $this->form->factory($formObject, $id);
             $head = '';
             $tail = '';
             if (isset($_GET['pretty'])) {
@@ -72,21 +72,23 @@ class FormRoute {
     public function app () {
         //view
         $callback = function ($form, $id=false) {
-            $this->form->view([
-                'form' => 'form/' . $form . '.php',
-                'app' => 'app/forms/' . strtolower($form) . '.yml',
-                'layout' => 'public/layouts/forms/' . strtolower($form) . '.html'
-            ], $id);
+            $this->form->view(
+                $this->form->markerToClass('Form__' . $form),
+                'app/forms/' . strtolower($form) . '.yml',
+                'public/layouts/forms/' . strtolower($form) . '.html',
+                $id
+            );
         };
         $this->route->get('/form/{form}', $callback);
         $this->route->get('/form/{form}.html', $callback);
         $this->route->get('/form/{form}/{id}', $callback);
         $callback = function ($bundle, $form, $id=false) {
-            $this->form->view([
-                'form' => 'bundles/' . $bundle . '/forms/' . $form . '.php',
-                'app' => 'bundles/' . $bundle . '/app/forms/' . strtolower($form) . '.yml',
-                'layout' => 'public/layouts/' . $bundle . '/forms/' . strtolower($form) . '.html'
-            ], $id);
+            $this->form->view(
+                $this->form->markerToClass($bundle . '__Form__' . $form),
+                'bundles/' . $bundle . '/app/forms/' . strtolower($form) . '.yml',
+                'public/layouts/' . $bundle . '/forms/' . strtolower($form) . '.html',
+                $id
+            );
         };
         $this->route->get('/subform/{bundle}/{form}', $callback);
         $this->route->get('/subform/{bundle}/{form}.html', $callback);
@@ -94,33 +96,25 @@ class FormRoute {
 
         //update
         $callback = function ($form, $id=false) {
-            $this->form->upsert($this->formPath($form), $id);
+            $this->form->upsert($this->form->markerToClass('Form__' . $form), $id);
         };
         $this->route->post('/form/{form}', $callback);
         $this->route->post('/form/{form}/{id}', $callback);
         $callback = function ($bundle, $form, $id=false) {
-            $this->form->upsert($this->bundleFormPath(), $id);
+            $this->form->upsert($this->form->markerToClass($bundle . '__Form__' . $form), $id);
         };
         $this->route->post('/subform/{bundle}/{form}', $callback);
         $this->route->post('/subform/{bundle}/{form}/{id}', $callback);
 
         //delete
         $callback = function ($form, $dbURI) {
-            $this->form->delete($this->formPath($form), $dbURI);
+            $this->form->delete($this->form->markerToClass('Form__' . $form), $dbURI);
         };
-        $this->route->delete('/form/{form}/{id}', $callback);
+        $this->route->delete('/form/{form}/{dbURI}', $callback);
         $callback = function ($bundle, $form, $dbURI) {
-            $this->form->delete($this->bundleFormPath($bundle, $form), $dbURI);
+            $this->form->delete($this->form->markerToClass($bundle . '__Form__' . $form), $dbURI);
         };
-        $this->route->delete('/subform/{bundle}/{form}/{id}', $callback);
-    }
-
-    private function formPath ($form) {
-        return 'forms/' . $form . '.php';
-    }
-
-    private function bundleFormPath ($bundle, $path) {
-        return 'bundles/' . $bundle . '/forms/' . $form . '.php'; 
+        $this->route->delete('/subform/{bundle}/{form}/{dbURI}', $callback);
     }
 
     private static function stubRead ($name, &$collection, $url, $root) {

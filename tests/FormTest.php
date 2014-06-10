@@ -40,53 +40,23 @@ class FormTest extends \PHPUnit_Framework_TestCase {
     }
 
     public function testFormFactorySuccess () {
-        $formObject = $this->form->factory('forms/Contact.php');
+        $formObject = $this->form->factory(new \Form\Contact);
         $this->assertTrue(get_class($formObject) == 'Form\Contact');
     }
 
-    public function testFormFactoryFail () {
-        $caught = false;
-        try {
-            $formObject = $this->form->factory('forms/Unknown.php');
-        } catch (FormUnknownException $e) {
-            $caught = true;
-        }
-        $this->assertTrue($caught);
-    }
-
     public function testFormFactoryBundleSuccess () {
-        $formObject = $this->form->factory('bundles/Sample/forms/Contact.php');
+        $formObject = $this->form->factory(new \Sample\Form\Contact);
         $this->assertTrue(get_class($formObject) == 'Sample\Form\Contact');
     }
 
     public function testFormFactoryManagerSuccess () {
-        $formObject = $this->form->factory('managers/Blogs.php');
+        $formObject = $this->form->factory(new \Manager\Blogs);
         $this->assertTrue(get_class($formObject) == 'Manager\Blogs');
     }
 
     public function testFormFactoryManagerBundleSuccess () {
-        $formObject = $this->form->factory('bundles/Sample/managers/Blogs.php');
+        $formObject = $this->form->factory(new \Sample\Manager\Blogs);
         $this->assertTrue(get_class($formObject) == 'Sample\Manager\Blogs');
-    }
-
-    public function testFormFactoryBundleFail () {
-        $caught = false;
-        try {
-            $formObject = $this->form->factory('bundles/Sample/forms/Unknown.php');
-        } catch (FormUnknownException $e) {
-            $caught = true;
-        }
-        $this->assertTrue($caught);
-    }
-
-    public function testFormValidationError () {
-        try {
-            $this->form->view([]);
-        } catch (FormPathException $e) {
-            $this->assertTrue(true);
-            return;
-        }
-        $this->assertTrue(false);
     }
 
     private function jsonValidate ($json) {
@@ -98,7 +68,7 @@ class FormTest extends \PHPUnit_Framework_TestCase {
     }
 
     public function testFormJsonSuccess () {
-        $formObject = $this->form->factory('forms/Contact.php');
+        $formObject = $this->form->factory(new \Form\Contact);
         $jsonValid = $this->jsonValidate($this->form->json($formObject));
         $this->assertTrue($jsonValid);
     }
@@ -120,35 +90,35 @@ class FormTest extends \PHPUnit_Framework_TestCase {
     }
 
     public function testFormJsonPopulatedSuccess () {
-        $formObject = $this->form->factory('forms/Contact.php', $this->contactId);
+        $formObject = $this->form->factory(new \Form\Contact, $this->contactId);
         $jsonValid = $this->jsonValidate($this->form->json($formObject));
         $fieldMatched = $this->matchFirstName($this->form->json($formObject));
         $this->assertTrue($jsonValid && $fieldMatched);
     }
 
     public function testBundleFormJsonPopulatedSuccess () {
-        $formObject = $this->form->factory('bundles/Sample/forms/Contact.php', $this->contactId);
+        $formObject = $this->form->factory(new \Sample\Form\Contact, $this->contactId);
         $jsonValid = $this->jsonValidate($this->form->json($formObject));
         $fieldMatched = $this->matchFirstName($this->form->json($formObject), 'Sample');
         $this->assertTrue($jsonValid && $fieldMatched);
     }
 
     public function testManagerJsonPopulatedSuccess () {
-        $formObject = $this->form->factory('managers/Blogs.php', $this->blogId);
+        $formObject = $this->form->factory(new \Manager\Blogs, $this->blogId);
         $jsonValid = $this->jsonValidate($this->form->json($formObject));
         $fieldMatched = $this->matchTitle($this->form->json($formObject));
         $this->assertTrue($jsonValid && $fieldMatched);
     }
 
     public function testBundleManagerJsonPopulatedSuccess () {
-        $formObject = $this->form->factory('bundles/Sample/managers/Blogs.php', $this->blogId);
+        $formObject = $this->form->factory(new \Sample\Manager\Blogs, $this->blogId);
         $jsonValid = $this->jsonValidate($this->form->json($formObject));
         $fieldMatched = $this->matchTitle($this->form->json($formObject), 'Sample');
         $this->assertTrue($jsonValid && $fieldMatched);
     }
 
     public function testFormSubmitError () {
-        $response = json_decode($this->form->upsert('forms/Contact.php', $this->contactId), true);
+        $response = json_decode($this->form->upsert(new \Form\Contact, $this->contactId), true);
         $this->assertTrue($response['success'] === false);
     }
 
@@ -162,7 +132,7 @@ class FormTest extends \PHPUnit_Framework_TestCase {
                 'message' => 'Test'
             ]
         ]);
-        $response = json_decode($this->form->upsert('forms/Contact.php', $this->contactId), true);
+        $response = json_decode($this->form->upsert(new \Form\Contact, $this->contactId), true);
         $this->assertTrue($response['success'] === false);
     }
 
@@ -180,7 +150,7 @@ class FormTest extends \PHPUnit_Framework_TestCase {
                 'message' => 'Test'
             ]
         ]);
-        $response = json_decode($this->form->upsert('forms/Contact.php', $this->contactId), true);
+        $response = json_decode($this->form->upsert(new \Form\Contact, $this->contactId), true);
         $this->assertTrue($response['success'] === true);
     }
 
@@ -194,7 +164,7 @@ class FormTest extends \PHPUnit_Framework_TestCase {
                 'message' => 'Test'
             ]
         ]);
-        $response = json_decode($this->form->upsert('bundles/Sample/forms/Contact.php', $this->contactId), true);
+        $response = json_decode($this->form->upsert(new \Sample\Form\Contact, $this->contactId), true);
         $this->assertTrue($response['success'] === false);
     }
 
@@ -212,7 +182,7 @@ class FormTest extends \PHPUnit_Framework_TestCase {
                 'message' => 'Test'
             ]
         ]);
-        $response = json_decode($this->form->upsert('bundles/Sample/form/Contact.php', $this->contactId), true);
+        $response = json_decode($this->form->upsert(new \Sample\Form\Contact, $this->contactId), true);
         $this->assertTrue($response['success'] === true);
     }
 
@@ -222,7 +192,7 @@ class FormTest extends \PHPUnit_Framework_TestCase {
                 'title' => 'Test'
             ]
         ]);
-        $response = json_decode($this->form->upsert('managers/Blogs.php', $this->blogId), true);
+        $response = json_decode($this->form->upsert(new \Manager\Blogs, $this->blogId), true);
         $this->assertTrue($response['success'] === false);
     }
 
@@ -238,7 +208,7 @@ class FormTest extends \PHPUnit_Framework_TestCase {
                 'display_date' => '2000-01-01'
             ]
         ]);
-        $response = json_decode($this->form->upsert('managers/Blogs.php', $this->blogId), true);
+        $response = json_decode($this->form->upsert(new \Manager\Blogs, $this->blogId), true);
         $this->assertTrue($response['success'] === true);
     }
 
@@ -248,7 +218,7 @@ class FormTest extends \PHPUnit_Framework_TestCase {
                 'title' => 'Test'
             ]
         ]);
-        $response = json_decode($this->form->upsert('bundles/Sample/managers/Blogs.php', $this->blogId), true);
+        $response = json_decode($this->form->upsert(new \Sample\Manager\Blogs, $this->blogId), true);
         $this->assertTrue($response['success'] === false);
     }
 
@@ -264,17 +234,17 @@ class FormTest extends \PHPUnit_Framework_TestCase {
                 'display_date' => '2000-01-01'
             ]
         ]);
-        $response = json_decode($this->form->upsert('bundles/Sample/managers/Blogs.php', $this->blogId), true);
+        $response = json_decode($this->form->upsert(new \Sample\Manager\Blogs, $this->blogId), true);
         $this->assertTrue($response['success'] === true);
     }
 
     public function testFormView () {
         ob_start();
-        $this->form->view([
-            'form' => 'forms/Contact.php',
-            'app' => 'app/forms/contact.yml',
-            'layout' => 'public/layouts/forms/contact.html'
-        ]);
+        $this->form->view(
+            new \Form\Contact,
+            'app/forms/contact.yml',
+            'public/layouts/forms/contact.html'
+        );
         $markup = ob_get_clean();
         $found = false;
         if (substr_count($markup, '<input type="text" placeholder="First Name" name="Form__Contact[first_name]"') == 1) {
@@ -285,11 +255,11 @@ class FormTest extends \PHPUnit_Framework_TestCase {
 
     public function testManagerView () {
         ob_start();
-        $this->form->view([
-            'form' => 'managers/Blogs.php',
-            'app' => 'bundles/Manager/app/forms/blogs.yml',
-            'layout' => 'public/layouts/Manager/forms/any.html'
-        ]);
+        $this->form->view(
+            new \Manager\Blogs,
+            'bundles/Manager/app/forms/blogs.yml',
+            'public/layouts/Manager/forms/any.html'
+        );
         $markup = ob_get_clean();
         $found = false;
         if (substr_count($markup, '<input type="text" name="Manager__Blogs[title]"') ==  1) {
@@ -299,19 +269,33 @@ class FormTest extends \PHPUnit_Framework_TestCase {
     }
 
     public function testBundleFormView () {
-        $this->form->view([
-            'form' => 'bundles/Sample/forms/Contact.php',
-            'app' => 'bundles/Sample/app/forms/contact.yml',
-            'layout' => 'public/layouts/Sample/forms/contact.html'
-        ]);
+        ob_start();
+        $this->form->view(
+            new \Sample\Form\Contact,
+            'bundles/Sample/app/forms/contact.yml',
+            'public/layouts/Sample/forms/contact.html'
+        );
+        $markup = ob_get_clean();
+        $found = false;
+        if (substr_count($markup, '<input type="text" placeholder="First Name" name="Sample__Form__Contact[first_name]"') ==  1) {
+            $found = true;
+        }
+        $this->assertTrue($found);
     }
 
     public function testBundleManagerView () {
-        $this->form->view([
-            'form' => 'bundles/Sample/managers/Blogs.php',
-            'app' => 'bundles/Manager/app/forms/any.yml',
-            'layout' => 'public/layouts/Manager/forms/any.html'
-        ]);
+        ob_start();
+        $this->form->view(
+            new \Sample\Manager\Blogs,
+            'bundles/Manager/app/forms/blogs.yml',
+            'public/layouts/Manager/forms/any.html'
+        );
+        $markup = ob_get_clean();
+        $found = false;
+        if (substr_count($markup, '<input type="text" name="Manager__Blogs[title]"') ==  1) {
+            $found = true;
+        }
+        $this->assertTrue($found);
     }
 
 //DELETE

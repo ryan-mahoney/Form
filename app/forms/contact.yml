@@ -1,5 +1,5 @@
 binding:
-    contact-form:
+    Form__Contact:
         url: '%dataAPI%/json-form/Form__Contact'
         args: []
         partial: 'forms/contact.hbs'

@@ -2,9 +2,6 @@
 namespace Sample\Form;
 
 class Contact {
-	public function __construct ($field) {
-		$this->field = $field;
-	}
 	public $storage = [
 		'collection'	=> 'contacts',
 		'key'			=> '_id'

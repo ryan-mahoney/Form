@@ -4,8 +4,8 @@ imports:
 js:
 
 binding:
-    contact:
-        url: '%dataAPI%/json-form/contact'
+    Form__Contact:
+        url: '%dataAPI%/json-form/Sample__Form__Contact'
         args: []
         partial: 'forms/contact.hbs'
         type: 'Form'

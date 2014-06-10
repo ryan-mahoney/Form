@@ -86,19 +86,13 @@ class Form {
         }
     }
 
-    public function factory ($path, $dbURI=false) {
-        $type = $this->formType($path);
-        $class = array_pop(explode('/', rtrim($path, '.php')));
-        $bundle = false;
-        $className = $this->bundleNameSpace($path, $bundle) . $type . '\\' . $class;
-        if (!class_exists($className)) {
-            throw new FormUnknownException($className . ': unknown class.');
-        }
-        $formObject = new $className($this->field);
+    public function factory ($formObject, $dbURI=false) {
+        $formObject->field = $this->field;
         $formObject->fields = $this->parseFieldMethods($formObject);
         $formObject->db = $this->db;
-        $formObject->marker = str_replace('\\', '__', $className);
-        $formObject->bundle = $bundle;
+        $formObject->marker = str_replace('\\', '__', get_class($formObject));
+        $firstPiece = array_shift(explode('__', $formObject->marker));
+        $formObject->bundle = (!in_array($firstPiece, ['Form', 'Manager'])) ? $firstPiece : '';
         if ($this->showMarker === true) {
             echo 'Form marker: ', $formObject->marker, "\n";
         }
@@ -281,18 +275,16 @@ class Form {
     }
 
     private function validatePaths (Array &$paths) {
-        foreach (['form', 'layout', 'app'] as $type) {
+        foreach (['layout', 'app'] as $type) {
             if (!isset($paths[$type])) {
                 throw new FormPathException('Can not find ' . $type);
             }
         }
-        if (!isset($paths['class'])) {
-            $type = $this->formType($paths['form']);
-            $class = array_pop(explode('/', rtrim($paths['form'], '.php')));
-            $paths['class'] = $this->bundleNameSpace($paths['form']) . $type . '\\' . $class;
+        if (!class_exists($paths['form'])) {
+            throw new \Exception('bad form class: ' . $form);
         }
         if (!isset($paths['name'])) {
-            $paths['name'] = $class;
+            $paths['name'] = array_pop(explode('\\', $paths['form']));
         }
     }
 
@@ -315,22 +307,26 @@ class Form {
         return '';
     }
 
-    public function view (Array $paths, $id=false) {
-        $this->validatePaths($paths);
-        $this->separation->app($paths['app'])->
-            layout($paths['layout'])->
-            args($paths['name'], ['id' => $id])->
+    public function view ($formObject, $app, $layout, $id=false) {
+        $args = [];
+        if ($id != false) {
+            $args['id'] = $id;
+        }
+        //$this->validatePaths($paths);
+        $this->separation->app($app)->
+            layout($layout)->
+            args(str_replace('\\', '__', get_class($formObject)), $args)->
             template()->
             write();
     }
 
-    public function viewJson ($formClass, $id=false) {
-        $formObject = $this->form->factory($form, $id);
+    public function viewJson ($formObject, $id=false) {
+        $formObject = $this->form->factory($formObject, $id);
         echo $this->form->json($formObject, $id);
     }
 
-    public function upsert ($formClass, $id=false) {
-        $formObject = $this->factory($formClass, $id);
+    public function upsert ($formObject, $id=false) {
+        $formObject = $this->factory($formObject, $id);
         if ($id === false) {
             if (isset($this->post->{$formObject->marker}['id'])) {
                 $id = $this->post->{$formObject->marker}['id'];
@@ -375,8 +371,8 @@ class Form {
         echo $topic, "\n";
     }
 
-    public function delete ($formClass, $id) {
-        $formObject = $this->factory($formClass, $id);
+    public function delete ($formObject, $id) {
+        $formObject = $this->factory($formObject, $id);
         if ($id === false) {
             throw new \Exception('ID not supplied in post.');
         }
@@ -410,27 +406,14 @@ class Form {
         }
     }
 
-    public function markerToClassPath ($marker) {
-        $pieces = explode('__', $marker);
-        $count = count($pieces);
-        $type = $pieces[($count - 2)];
-        if ($type == 'Form') {
-            $type = 'forms';
-        } elseif ($type == 'Manager') {
-            $type = 'managers';
-        } else {
-            throw new FormUnknownTypeException($marker);
-        }
-        if ($count == 2) {
-            return $type . '/' . $pieces[1] . '.php';
-        } elseif ($count == 3) {
-            return 'bundles/' . $pieces[0] . '/' . $type . '/' . $pieces[2] . '.php';
-        } else {
-            throw new FormBadMarkerException($marker);
-        }
+    public function markerToClassName ($marker) {
+        return str_replace('__', '\\', $marker);
+    }
+
+    public function markerToClass ($marker) {
+        $class = str_replace('__', '\\', $marker);
+        return new $class();
     }
 }
 
 class FormUnknownException extends \Exception {}
-class FormUnknownTypeException extends \Exception {}
-class FormBadMarkerException extends \Exception {}
