@@ -45,6 +45,20 @@ class Form {
         $this->topic = $topic;
     }
 
+    public function tokenHashGet ($formObject) {
+        return md5($this->root . session_id() . get_class($formObject));
+    }
+
+    private function tokenHashMatch (Array $input, $formObject) {
+        if (!isset($input['form-token'])) {
+            return false;
+        }
+        if ($input['form-token'] != $this->tokenHashGet($formObject)) {
+            return false;
+        }
+        return true;
+    }
+
     public function showTopics () {
         $this->showTopics = true;
     }
@@ -93,6 +107,7 @@ class Form {
         $formObject->marker = str_replace('\\', '__', get_class($formObject));
         $firstPiece = array_shift(explode('__', $formObject->marker));
         $formObject->bundle = (!in_array($firstPiece, ['Form', 'Manager'])) ? $firstPiece : '';
+        $formObject->token = $this->tokenHashGet($formObject);
         if ($this->showMarker === true) {
             echo 'Form marker: ', $formObject->marker, "\n";
         }
@@ -159,6 +174,7 @@ class Form {
         }
         $out['id_spare'] = (string)new \MongoId();
         $out['id'] = '<input type="hidden" name="' . $formObject->marker . '[id]" value="' . (string)$formObject->id . '" />';
+        $out['form-token'] = '<input type="hidden" name="' . $formObject->marker . '[form-token]" value="' . $formObject->token . '" />';
         return json_encode($out, JSON_PRETTY_PRINT);
     }
 
@@ -193,6 +209,10 @@ class Form {
     public function validate ($formObject) {
         $passed = true;
         $formPost = $this->post->{$formObject->marker};
+        if (!$this->tokenHashMatch((array)$formPost, $formObject)) {
+            $passed = false;
+            $this->post->errorFieldSet($formObject->marker, 'Invalid form submission.');        
+        }
         foreach ($formObject->fields as $field) {
             if (!isset($field['label']) || empty($field['label']) == '') {
                 if (isset($field['errorLabel'])) {
@@ -268,6 +288,7 @@ class Form {
     }
 
     public function responseError () {
+        http_response_code(400);
         return json_encode([
             'success' => false,
             'errors' => $this->post->errorsGet()
@@ -371,20 +392,21 @@ class Form {
         echo $topic, "\n";
     }
 
-    public function delete ($formObject, $id) {
+    public function delete ($formObject, $id, $token) {
         $formObject = $this->factory($formObject, $id);
         if ($id === false) {
             throw new \Exception('ID not supplied in post.');
+        }
+        if (!$this->tokenHashMatch(['form-token' => $token], $formObject)) {
+            $passed = false;
+            $this->post->errorFieldSet($formObject->marker, 'Invalid form submission.');
+            return $this->responseError();      
         }
         $context = [
             'dbURI' => $id,
             'formMarker' => $formObject->marker,
             'formObject' => $formObject
         ];
-        if (!$this->validate($formObject)) {
-            return $this->responseError();
-        }
-        $this->sanitize($formObject);
         $topic = $formObject->marker . '-delete';
         $this->showTopic($topic);
         $this->topic->publish($topic, $context);

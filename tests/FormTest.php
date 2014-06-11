@@ -1,6 +1,8 @@
 <?php
 namespace Opine;
 
+session_start();
+
 class FormTest extends \PHPUnit_Framework_TestCase {
     private $db;
     private $formRoute;
@@ -10,6 +12,13 @@ class FormTest extends \PHPUnit_Framework_TestCase {
     private $contactId = 'contacts:538887dbed88e5a5527c1ef5';
     private $blogId = 'blogs:538887dded88e5a5527c1ef6';
     private static $routesCalled = false;
+    private $contactPost = [
+        'first_name' => 'Test',
+        'last_name' => 'Test',
+        'phone' => '555-555-5555',
+        'email' => 'test@test.com',
+        'message' => 'Test'
+    ];
 
     public function setup () {
         date_default_timezone_set('UTC');
@@ -20,12 +29,14 @@ class FormTest extends \PHPUnit_Framework_TestCase {
         $this->form = $container->form;
         $this->post = $container->post;
         $this->topic = $container->topic;
+        $this->route = $container->route;
         $this->ensureDocuments();
         $this->post->clear();
         $this->separation = $container->separation;
         $this->separation->forceLocal();
         if (self::$routesCalled === false) {
             $this->formRoute->json();
+            $this->formRoute->app();
             self::$routesCalled = true;
         }
     }
@@ -124,13 +135,7 @@ class FormTest extends \PHPUnit_Framework_TestCase {
 
     public function testFormSubmitFail () {
         $this->post->populate('/', [
-            'Form__Contact' => [
-                'first_name' => 'Test',
-                'last_name' => 'Test',
-                'phone' => '555-555-5555',
-                'email' => 'test@test.com',
-                'message' => 'Test'
-            ]
+            'Form__Contact' => $this->contactPost
         ]);
         $response = json_decode($this->form->upsert(new \Form\Contact, $this->contactId), true);
         $this->assertTrue($response['success'] === false);
@@ -142,27 +147,18 @@ class FormTest extends \PHPUnit_Framework_TestCase {
         });
         $this->topic->subscribe('Form__Contact-save', 'fake-submit', ['post']);
         $this->post->populate('/', [
-            'Form__Contact' => [
-                'first_name' => 'Test',
-                'last_name' => 'Test',
-                'phone' => '555-555-5555',
-                'email' => 'test@test.com',
-                'message' => 'Test'
-            ]
-        ]);
+            'Form__Contact' => array_merge(
+                $this->contactPost, 
+                ['form-token' => $this->form->tokenHashGet(new \Form\Contact)]
+            )]
+        );
         $response = json_decode($this->form->upsert(new \Form\Contact, $this->contactId), true);
         $this->assertTrue($response['success'] === true);
     }
 
     public function testFormBundleSubmitFail () {
         $this->post->populate('/', [
-            'Sample__Form__Contact' => [
-                'first_name' => 'Test',
-                'last_name' => 'Test',
-                'phone' => '555-555-5555',
-                'email' => 'test@test.com',
-                'message' => 'Test'
-            ]
+            'Sample__Form__Contact' => $this->contactPost
         ]);
         $response = json_decode($this->form->upsert(new \Sample\Form\Contact, $this->contactId), true);
         $this->assertTrue($response['success'] === false);
@@ -174,13 +170,10 @@ class FormTest extends \PHPUnit_Framework_TestCase {
         });
         $this->topic->subscribe('Sample__Form__Contact-save', 'fake-submit', ['post']);
         $this->post->populate('/', [
-            'Sample__Form__Contact' => [
-                'first_name' => 'Test',
-                'last_name' => 'Test',
-                'phone' => '555-555-5555',
-                'email' => 'test@test.com',
-                'message' => 'Test'
-            ]
+            'Sample__Form__Contact' => array_merge(
+                $this->contactPost,
+                ['form-token' => $this->form->tokenHashGet(new \Sample\Form\Contact)]
+            )
         ]);
         $response = json_decode($this->form->upsert(new \Sample\Form\Contact, $this->contactId), true);
         $this->assertTrue($response['success'] === true);
@@ -189,7 +182,8 @@ class FormTest extends \PHPUnit_Framework_TestCase {
     public function testManagerSubmitFail () {
         $this->post->populate('/', [
             'Manager__Blogs' => [
-                'title' => 'Test'
+                'title' => 'Test',
+                'form-token' => $this->form->tokenHashGet(new \Manager\Blogs)
             ]
         ]);
         $response = json_decode($this->form->upsert(new \Manager\Blogs, $this->blogId), true);
@@ -205,7 +199,8 @@ class FormTest extends \PHPUnit_Framework_TestCase {
             'Manager__Blogs' => [
                 'title' => 'Test',
                 'status' => 'draft',
-                'display_date' => '2000-01-01'
+                'display_date' => '2000-01-01',
+                'form-token' => $this->form->tokenHashGet(new \Manager\Blogs)
             ]
         ]);
         $response = json_decode($this->form->upsert(new \Manager\Blogs, $this->blogId), true);
@@ -215,7 +210,8 @@ class FormTest extends \PHPUnit_Framework_TestCase {
     public function testBundleManagerSubmitFail () {
         $this->post->populate('/', [
             'Sample__Manager__Blogs' => [
-                'title' => 'Test'
+                'title' => 'Test',
+                'form-token' => $this->form->tokenHashGet(new \Sample\Manager\Blogs)
             ]
         ]);
         $response = json_decode($this->form->upsert(new \Sample\Manager\Blogs, $this->blogId), true);
@@ -231,7 +227,8 @@ class FormTest extends \PHPUnit_Framework_TestCase {
             'Sample__Manager__Blogs' => [
                 'title' => 'Test',
                 'status' => 'draft',
-                'display_date' => '2000-01-01'
+                'display_date' => '2000-01-01',
+                'form-token' => $this->form->tokenHashGet(new \Sample\Manager\Blogs)
             ]
         ]);
         $response = json_decode($this->form->upsert(new \Sample\Manager\Blogs, $this->blogId), true);
@@ -298,8 +295,77 @@ class FormTest extends \PHPUnit_Framework_TestCase {
         $this->assertTrue($found);
     }
 
-//DELETE
-//ROUTE VIEW
-//ROUTE UPDATE
-//ROUTE DELETE
+    public function testFormDeleteError () {
+        $response = json_decode($this->form->delete(new \Form\Contact, $this->contactId, $this->form->tokenHashGet(new \Form\Contact)), true);
+        $this->assertTrue($response['success'] === false);
+    }
+
+    public function testFormDeleteSuccess () {
+        $this->topic->subscriber('fake-delete', function ($context, $post) {
+            $post->statusDeleted();
+        });
+        $this->topic->subscribe('Form__Contact-delete', 'fake-delete', ['post']);
+        $response = json_decode($this->form->delete(new \Form\Contact, $this->contactId, $this->form->tokenHashGet(new \Form\Contact)), true);
+        $this->assertTrue($response['success'] === true);
+    }
+
+    public function testViewFromRouteSuccess () {
+        $markup = $this->route->run('GET', '/form/Contact');
+        if (substr_count($markup, '<input type="text" placeholder="First Name" name="Form__Contact[first_name]"') ==  1) {
+            $found = true;
+        }
+        $this->assertTrue($found);
+    }
+
+    public function testUpdateFromRouteSuccess () {
+        $this->topic->subscriber('fake-submit', function ($context, $post) {
+            $post->statusSaved();
+        });
+        $this->topic->subscribe('Form__Contact-save', 'fake-submit', ['post']);
+        $this->post->populate('/', [
+            'Form__Contact' => array_merge(
+                $this->contactPost,
+                ['form-token' => $this->form->tokenHashGet(new \Form\Contact)]
+            )
+        ]);
+        $response = json_decode($this->route->run('POST', '/form/Contact/' . $this->contactId), true);
+        $this->assertTrue($response['success'] == true);
+    }
+
+    public function testUpdateFromRouteTokenFail () {
+        $this->topic->subscriber('fake-submit', function ($context, $post) {
+            $post->statusSaved();
+        });
+        $this->topic->subscribe('Form__Contact-save', 'fake-submit', ['post']);
+        $this->post->populate('/', [
+            'Form__Contact' => array_merge(
+                $this->contactPost
+            )
+        ]);
+        $response = json_decode($this->route->run('POST', '/form/Contact/' . $this->contactId), true);
+        $this->assertTrue($response['success'] == false);
+    }
+
+    public function testDeleteFromRouteSuccess () {
+        $this->topic->subscriber('fake-delete', function ($context, $post) {
+            $post->statusDeleted();
+        });
+        $this->topic->subscribe('Form__Contact-delete', 'fake-delete', ['post']);
+        $response = json_decode($this->route->run('DELETE', '/form/Contact/' . $this->contactId . '?form-token=' . $this->form->tokenHashGet(new \Form\Contact)), true);
+        $this->assertTrue($response['success'] === true);
+    }
+
+    public function testDeleteFromRouteTokenFail () {
+        $this->topic->subscriber('fake-delete', function ($context, $post) {
+            $post->statusDeleted();
+        });
+        $this->topic->subscribe('Form__Contact-delete', 'fake-delete', ['post']);
+        $response = json_decode($this->route->run('DELETE', '/form/Contact/' . $this->contactId . '?form-token=123'), true);
+        $this->assertTrue($response['success'] === false);
+    }
+
+    public function testBundleDetermination () {
+        $formObject = $this->form->factory(new \Sample\Form\Contact);
+        $this->assertTrue($formObject->bundle == 'Sample');
+    }
 }

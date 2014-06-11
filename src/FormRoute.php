@@ -71,48 +71,56 @@ class FormRoute {
 
     public function app () {
         //view
-        $callback = function ($form, $id=false) {
+        $callback = function ($form, $dbURI=false) {
             $this->form->view(
                 $this->form->markerToClass('Form__' . $form),
                 'app/forms/' . strtolower($form) . '.yml',
                 'public/layouts/forms/' . strtolower($form) . '.html',
-                $id
+                $dbURI
             );
         };
         $this->route->get('/form/{form}', $callback);
         $this->route->get('/form/{form}.html', $callback);
-        $this->route->get('/form/{form}/{id}', $callback);
-        $callback = function ($bundle, $form, $id=false) {
+        $this->route->get('/form/{form}/{dbURI}', $callback);
+        $callback = function ($bundle, $form, $dbURI=false) {
             $this->form->view(
                 $this->form->markerToClass($bundle . '__Form__' . $form),
                 'bundles/' . $bundle . '/app/forms/' . strtolower($form) . '.yml',
                 'public/layouts/' . $bundle . '/forms/' . strtolower($form) . '.html',
-                $id
+                $dbURI
             );
         };
         $this->route->get('/subform/{bundle}/{form}', $callback);
         $this->route->get('/subform/{bundle}/{form}.html', $callback);
-        $this->route->get('/subform/{bundle}/{form}/{id}', $callback);
+        $this->route->get('/subform/{bundle}/{form}/{dbURI}', $callback);
 
         //update
-        $callback = function ($form, $id=false) {
-            $this->form->upsert($this->form->markerToClass('Form__' . $form), $id);
+        $callback = function ($form, $dbURI=false) {
+            echo $this->form->upsert($this->form->markerToClass('Form__' . $form), $dbURI);
         };
         $this->route->post('/form/{form}', $callback);
-        $this->route->post('/form/{form}/{id}', $callback);
-        $callback = function ($bundle, $form, $id=false) {
-            $this->form->upsert($this->form->markerToClass($bundle . '__Form__' . $form), $id);
+        $this->route->post('/form/{form}/{dbURI}', $callback);
+        $callback = function ($bundle, $form, $dbURI=false) {
+            echo $this->form->upsert($this->form->markerToClass($bundle . '__Form__' . $form), $dbURI);
         };
         $this->route->post('/subform/{bundle}/{form}', $callback);
-        $this->route->post('/subform/{bundle}/{form}/{id}', $callback);
+        $this->route->post('/subform/{bundle}/{form}/{dbURI}', $callback);
 
         //delete
         $callback = function ($form, $dbURI) {
-            $this->form->delete($this->form->markerToClass('Form__' . $form), $dbURI);
+            $token = false;
+            if (isset($_GET['form-token'])) {
+                $token = $_GET['form-token'];
+            }
+            echo $this->form->delete($this->form->markerToClass('Form__' . $form), $dbURI, $token);
         };
         $this->route->delete('/form/{form}/{dbURI}', $callback);
         $callback = function ($bundle, $form, $dbURI) {
-            $this->form->delete($this->form->markerToClass($bundle . '__Form__' . $form), $dbURI);
+            $token = false;
+            if (isset($_GET['form-token'])) {
+                $token = $_GET['form-token'];
+            }
+            echo $this->form->delete($this->form->markerToClass($bundle . '__Form__' . $form), $dbURI, $token);
         };
         $this->route->delete('/subform/{bundle}/{form}/{dbURI}', $callback);
     }
