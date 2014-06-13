@@ -35,8 +35,7 @@ class FormTest extends \PHPUnit_Framework_TestCase {
         $this->separation = $container->separation;
         $this->separation->forceLocal();
         if (self::$routesCalled === false) {
-            $this->formRoute->json();
-            $this->formRoute->app();
+            $this->formRoute->paths();
             self::$routesCalled = true;
         }
     }

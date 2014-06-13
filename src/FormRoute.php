@@ -47,7 +47,8 @@ class FormRoute {
         $this->cache = $cache;
     }
 
-    public function json () {
+    public function paths () {
+        //json fields
         $callback = function ($marker, $id=false) {
             $formObject = $this->form->markerToClass($marker);
             if (isset($_GET['id']) && $id === false) {
@@ -67,9 +68,7 @@ class FormRoute {
         };
         $this->route->get('/json-form/{marker}', $callback);
         $this->route->get('/json-form/{marker}/{id}', $callback);
-    }
 
-    public function app () {
         //view
         $callback = function ($form, $dbURI=false) {
             $this->form->view(

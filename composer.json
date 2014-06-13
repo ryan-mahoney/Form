@@ -33,8 +33,6 @@
         "classmap": [
             "forms",
             "managers",
-            "bundles/Manager/forms",
-            "bundles/Manager/managers",
             "bundles/Sample/forms",
             "bundles/Sample/managers"
         ]
