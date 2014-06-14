@@ -33,7 +33,7 @@ class FormRoute {
     private $root;
     public $cache = false;
 
-    public function __construct ($route, $form, $field, $post, $separation, $topic, $root) {
+    public function __construct ($root, $route, $form, $field, $post, $separation, $topic) {
         $this->route = $route;
         $this->post = $post;
         $this->form = $form;

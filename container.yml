@@ -14,7 +14,7 @@ services:
         class:     'Symfony\Component\Yaml\Yaml'
     formRoute:
         class:     'Opine\FormRoute'
-        arguments: ['@route', '@form', '@field', '@post', '@separation', '@topic', '%root%']
+        arguments: ['%root%', '@route', '@form', '@field', '@post', '@separation', '@topic']
     form:
         class:     'Opine\Form'
         arguments: ['%root%', '@field', '@post', '@db', '@separation', '@topic']
