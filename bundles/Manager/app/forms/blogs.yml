@@ -2,6 +2,6 @@ js:
 
 binding:
     form:
-        url: '%dataAPI%/json-form/Manager__Blogs'
+        url: '%dataAPI%/Manager/json-form/Blogs'
         partial: 'Manager/forms/blogs.hbs'
         type: 'Form'

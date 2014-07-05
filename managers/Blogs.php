@@ -9,7 +9,7 @@
  * .8 make description use count variable
  * .9 definition added
  */
-namespace Manager;
+namespace Manager\Form;
 
 class Blogs {
     public $collection = 'blogs';

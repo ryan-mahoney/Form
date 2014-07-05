@@ -47,81 +47,94 @@ class FormRoute {
         $this->cache = $cache;
     }
 
+    private function jsonDecorate ($json) {
+        $head = '';
+        $tail = '';
+        if (isset($_GET['pretty'])) {
+            $head = '<html><head></head><body style="margin:0; border:0; padding: 0"><textarea wrap="off" style="overflow: auto; margin:0; border:0; padding: 0; width:100%; height: 100%">';
+            $tail = '</textarea></body></html>';
+        } elseif (isset($_GET['callback'])) {
+            $head = $_GET['callback'] . '(';
+            $tail = ');';
+        }
+        return $head . $json . $tail;
+    }
+
+    public function jsonFields ($form, $id=false) {
+        if (isset($_GET['id']) && $id === false) {
+            $id = $_GET['id'];
+        }
+        $className = '\Form\\' . $form;
+        echo $this->jsonDecorate($this->form->json($this->form->factory(new $className, $id), $id));
+    }
+
+    public function jsonBundleFields ($bundle, $form, $id=false) {
+        if (isset($_GET['id']) && $id === false) {
+            $id = $_GET['id'];
+        }
+        $className = '\\' . $bundle . '\Form\\' . $form;
+        echo $this->jsonDecorate($this->form->json($this->form->factory(new $className, $id), $id));        
+    }
+
+    public function view ($form, $dbURI=false) {
+        $this->form->view(
+            $this->form->markerToClass('Form__' . $form),
+            'app/forms/' . strtolower($form) . '.yml',
+            'public/layouts/forms/' . strtolower($form) . '.html',
+            $dbURI
+        );
+    }
+
+    public function bundleView ($bundle, $form, $dbURI=false) {
+        $this->form->view(
+            $this->form->markerToClass($bundle . '__Form__' . $form),
+            'bundles/' . $bundle . '/app/forms/' . strtolower($form) . '.yml',
+            'public/layouts/' . $bundle . '/forms/' . strtolower($form) . '.html',
+            $dbURI
+        );
+    }
+
+    public function update ($form, $dbURI=false) {
+        echo $this->form->upsert($this->form->markerToClass('Form__' . $form), $dbURI);
+    }
+
+    public function bundleUpdate ($bundle, $form, $dbURI=false) {
+        echo $this->form->upsert($this->form->markerToClass($bundle . '__Form__' . $form), $dbURI);
+    }
+
+    public function delete ($form, $dbURI) {
+        $token = false;
+        if (isset($_GET['form-token'])) {
+            $token = $_GET['form-token'];
+        }
+        echo $this->form->delete($this->form->markerToClass('Form__' . $form), $dbURI, $token);
+    }
+
+    public function bundleDelete ($bundle, $form, $dbURI) {
+        $token = false;
+        if (isset($_GET['form-token'])) {
+            $token = $_GET['form-token'];
+        }
+        echo $this->form->delete($this->form->markerToClass($bundle . '__Form__' . $form), $dbURI, $token);
+    }
+
     public function paths () {
-        //json fields
-        $callback = function ($marker, $id=false) {
-            $formObject = $this->form->markerToClass($marker);
-            if (isset($_GET['id']) && $id === false) {
-                $id = $_GET['id'];
-            }
-            $formObject = $this->form->factory($formObject, $id);
-            $head = '';
-            $tail = '';
-            if (isset($_GET['pretty'])) {
-                $head = '<html><head></head><body style="margin:0; border:0; padding: 0"><textarea wrap="off" style="overflow: auto; margin:0; border:0; padding: 0; width:100%; height: 100%">';
-                $tail = '</textarea></body></html>';
-            } elseif (isset($_GET['callback'])) {
-                $head = $_GET['callback'] . '(';
-                $tail = ');';
-            }
-            echo $head, $this->form->json($formObject, $id), $tail;
-        };
-        $this->route->get('/json-form/{marker}', $callback);
-        $this->route->get('/json-form/{marker}/{id}', $callback);
-
-        //view
-        $callback = function ($form, $dbURI=false) {
-            $this->form->view(
-                $this->form->markerToClass('Form__' . $form),
-                'app/forms/' . strtolower($form) . '.yml',
-                'public/layouts/forms/' . strtolower($form) . '.html',
-                $dbURI
-            );
-        };
-        $this->route->get('/form/{form}', $callback);
-        $this->route->get('/form/{form}.html', $callback);
-        $this->route->get('/form/{form}/{dbURI}', $callback);
-        $callback = function ($bundle, $form, $dbURI=false) {
-            $this->form->view(
-                $this->form->markerToClass($bundle . '__Form__' . $form),
-                'bundles/' . $bundle . '/app/forms/' . strtolower($form) . '.yml',
-                'public/layouts/' . $bundle . '/forms/' . strtolower($form) . '.html',
-                $dbURI
-            );
-        };
-        $this->route->get('/subform/{bundle}/{form}', $callback);
-        $this->route->get('/subform/{bundle}/{form}.html', $callback);
-        $this->route->get('/subform/{bundle}/{form}/{dbURI}', $callback);
-
-        //update
-        $callback = function ($form, $dbURI=false) {
-            echo $this->form->upsert($this->form->markerToClass('Form__' . $form), $dbURI);
-        };
-        $this->route->post('/form/{form}', $callback);
-        $this->route->post('/form/{form}/{dbURI}', $callback);
-        $callback = function ($bundle, $form, $dbURI=false) {
-            echo $this->form->upsert($this->form->markerToClass($bundle . '__Form__' . $form), $dbURI);
-        };
-        $this->route->post('/subform/{bundle}/{form}', $callback);
-        $this->route->post('/subform/{bundle}/{form}/{dbURI}', $callback);
-
-        //delete
-        $callback = function ($form, $dbURI) {
-            $token = false;
-            if (isset($_GET['form-token'])) {
-                $token = $_GET['form-token'];
-            }
-            echo $this->form->delete($this->form->markerToClass('Form__' . $form), $dbURI, $token);
-        };
-        $this->route->delete('/form/{form}/{dbURI}', $callback);
-        $callback = function ($bundle, $form, $dbURI) {
-            $token = false;
-            if (isset($_GET['form-token'])) {
-                $token = $_GET['form-token'];
-            }
-            echo $this->form->delete($this->form->markerToClass($bundle . '__Form__' . $form), $dbURI, $token);
-        };
-        $this->route->delete('/subform/{bundle}/{form}/{dbURI}', $callback);
+        $this->route->get('/json-form/{form}', 'formRoute@jsonFields');
+        $this->route->get('/json-form/{form}/{id}', 'formRoute@jsonFields');
+        $this->route->get('/{bundle}/json-form/{form}', 'formRoute@jsonBundleFields');
+        $this->route->get('/{bundle}/json-form/{form}/{id}', 'formRoute@jsonBundleFields');
+        $this->route->get('/form/{form}', 'formRoute@view');
+        $this->route->get('/form/{form}.html', 'formRoute@view');
+        $this->route->get('/form/{form}/{dbURI}', 'formRoute@view');
+        $this->route->get('/{bundle}/form/{form}', 'formRoute@bundleView');
+        $this->route->get('/{bundle}/form/{form}.html', 'formRoute@bundleView');
+        $this->route->get('/{bundle}/form/{form}/{dbURI}', 'formRoute@bundleView');
+        $this->route->post('/form/{form}', 'formRoute@update');
+        $this->route->post('/form/{form}/{dbURI}', 'formRoute@update');
+        $this->route->post('/{bundle}/form/{form}', 'formRoute@bundleUpdate');
+        $this->route->post('/{bundle}/form/{form}/{dbURI}', 'formRoute@bundleUpdate');
+        $this->route->delete('/form/{form}/{dbURI}', 'formRoute@delete');
+        $this->route->delete('/{bundle}/form/{form}/{dbURI}', 'formRoute@bundleDelete');
     }
 
     private static function stubRead ($name, &$collection, $url, $root) {
@@ -246,5 +259,3 @@ class FormRoute {
         echo 'Upgraded ', $upgraded, ' forms.', "\n";
     }
 }
-
-class FormPathException extends \Exception {}

@@ -1,6 +1,6 @@
 binding:
     Form__Contact:
-        url: '%dataAPI%/json-form/Form__Contact'
+        url: '%dataAPI%/json-form/Contact'
         args: []
         partial: 'forms/contact.hbs'
         type: 'Form'

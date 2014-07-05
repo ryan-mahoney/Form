@@ -1,5 +1,6 @@
 $(document).ready(function () {
     var submittedData = [];
+    var submittedForm;
     $('form[data-xhr="true"]').ajaxForm({
         type: 'post',
         dataType: 'json',
@@ -14,6 +15,7 @@ $(document).ready(function () {
         },
         beforeSubmit: function(arr, form, options) {
             submittedData = arr;
+            submittedForm = form;
         },
         success: function (response, status, xhr, form) {
             formUI.loaded(form);
@@ -41,6 +43,15 @@ $(document).ready(function () {
                 for (marker in response['errors']) {
                     formUI.errorShow(form, marker, response['errors'][marker]);
                 }
+            }
+        },
+        error: function (xhr, status, error) {
+            var response = xhr['responseJSON'];
+            if (typeof(FormError) == "function") {
+                FormError(response['errors']);
+            }
+            for (marker in response['errors']) {
+                formUI.errorShow(submittedForm, marker, response['errors'][marker]);
             }
         }
     });

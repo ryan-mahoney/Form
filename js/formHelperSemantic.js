@@ -1,5 +1,6 @@
 var formUI = {
-	errorShow: function (formNode, marker, errors) {	
+	errorShow: function (formNode, marker, errors) {
+		formNode.removeClass('loading');
 		formNode.addClass('warning');
 		var listNode = formNode.find('.ui.warning.message ul');
 		var fieldNode;

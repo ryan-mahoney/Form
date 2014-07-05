@@ -5,7 +5,7 @@ js:
 
 binding:
     Form__Contact:
-        url: '%dataAPI%/json-form/Sample__Form__Contact'
+        url: '%dataAPI%/Sample/json-form/Contact'
         args: []
         partial: 'forms/contact.hbs'
         type: 'Form'

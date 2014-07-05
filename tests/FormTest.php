@@ -60,7 +60,7 @@ class FormTest extends \PHPUnit_Framework_TestCase {
     }
 
     public function testFormFactoryManagerSuccess () {
-        $formObject = $this->form->factory(new \Manager\Blogs);
+        $formObject = $this->form->factory(new \Manager\Form\Blogs);
         $this->assertTrue(get_class($formObject) == 'Manager\Blogs');
     }
 
@@ -114,7 +114,7 @@ class FormTest extends \PHPUnit_Framework_TestCase {
     }
 
     public function testManagerJsonPopulatedSuccess () {
-        $formObject = $this->form->factory(new \Manager\Blogs, $this->blogId);
+        $formObject = $this->form->factory(new \Manager\Form\Blogs, $this->blogId);
         $jsonValid = $this->jsonValidate($this->form->json($formObject));
         $fieldMatched = $this->matchTitle($this->form->json($formObject));
         $this->assertTrue($jsonValid && $fieldMatched);
@@ -182,10 +182,10 @@ class FormTest extends \PHPUnit_Framework_TestCase {
         $this->post->populate('/', [
             'Manager__Blogs' => [
                 'title' => 'Test',
-                'form-token' => $this->form->tokenHashGet(new \Manager\Blogs)
+                'form-token' => $this->form->tokenHashGet(new \Manager\Form\Blogs)
             ]
         ]);
-        $response = json_decode($this->form->upsert(new \Manager\Blogs, $this->blogId), true);
+        $response = json_decode($this->form->upsert(new \Manager\Form\Blogs, $this->blogId), true);
         $this->assertTrue($response['success'] === false);
     }
 
@@ -199,10 +199,10 @@ class FormTest extends \PHPUnit_Framework_TestCase {
                 'title' => 'Test',
                 'status' => 'draft',
                 'display_date' => '2000-01-01',
-                'form-token' => $this->form->tokenHashGet(new \Manager\Blogs)
+                'form-token' => $this->form->tokenHashGet(new \Manager\Form\Blogs)
             ]
         ]);
-        $response = json_decode($this->form->upsert(new \Manager\Blogs, $this->blogId), true);
+        $response = json_decode($this->form->upsert(new \Manager\Form\Blogs, $this->blogId), true);
         $this->assertTrue($response['success'] === true);
     }
 
@@ -252,7 +252,7 @@ class FormTest extends \PHPUnit_Framework_TestCase {
     public function testManagerView () {
         ob_start();
         $this->form->view(
-            new \Manager\Blogs,
+            new \Manager\Form\Blogs,
             'bundles/Manager/app/forms/blogs.yml',
             'public/layouts/Manager/forms/any.html'
         );
