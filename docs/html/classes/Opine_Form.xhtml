@@ -1,0 +1,230 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html SYSTEM "about:legacy-compat">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:pdxf="http://xml.phpdox.net/functions" xmlns:pu="http://schema.phpunit.de/coverage/1.0" lang="en">
+  <head xmlns:git="http://xml.phpdox.net/gitlog#">
+    <title>phpDox - Opine\Form</title>
+    <link rel="stylesheet" type="text/css" href="../css/style.css" media="screen"/>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8"/>
+  </head>
+  <body>
+    <nav xmlns:git="http://xml.phpdox.net/gitlog#" class="topnav">
+      <ul>
+        <li>
+          <div class="logo"><span>/**</span>phpDox</div>
+        </li>
+        <li class="separator">
+          <a href="../index.xhtml">Overview</a>
+        </li>
+        <li class="separator">
+          <a href="../namespaces.xhtml">Namespaces</a>
+        </li>
+        <li>
+          <a href="../classes.xhtml">Classes</a>
+        </li>
+        <li class="separator">
+          <a href="../reports/index.xhtml">Reports</a>
+        </li>
+      </ul>
+    </nav>
+    <div id="mainstage">
+      <div class="box">
+        <ul class="breadcrumb">
+          <li>
+            <a href="../index.xhtml">Overview</a>
+          </li>
+          <li class="separator">
+            <a href="../classes.xhtml">Classes</a>
+          </li>
+          <li class="separator">
+            <a href="../classes.xhtml#Opine">Opine</a>
+          </li>
+          <li class="separator">Form</li>
+        </ul>
+      </div>
+      <nav class="box">
+        <ul>
+          <li>
+            <a href="#introduction">Introduction</a>
+          </li>
+          <li>
+            <a href="#synopsis">Synopsis</a>
+          </li>
+          <li>
+            <a href="#members">Members</a>
+          </li>
+          <li>
+            <a href="#methods">Methods</a>
+          </li>
+        </ul>
+      </nav>
+      <section>
+        <h1 id="introduction"><small>Opine\</small>Form</h1>
+        <h4/>
+        <p/>
+        <h2 id="synopsis">Synopsis</h2>
+        <div class="synopsis">class Form
+            {<br/><ul class="none"><li>// members</li><li>private <a href="#members">$root</a>;
+                    </li><li>private <a href="#members">$field</a>;
+                    </li><li>private <a href="#members">$post</a>;
+                    </li><li>private <a href="#members">$db</a>;
+                    </li><li>private <a href="#members">$formStorage</a>;
+                    </li><li>private <a href="#members">$separation</a>;
+                    </li><li>private <a href="#members">$topic</a>;
+                    </li><li>private <a href="#members">$showTopics</a>;
+                    </li><li>private <a href="#members">$showMarker</a>;
+                    </li></ul><ul class="none"><li>// methods</li><li>public void <a title="Opine\Form" href="../classes/Opine_Form/__construct.xhtml">__construct</a>()
+                    </li><li>public void <a title="Opine\Form" href="../classes/Opine_Form/tokenHashGet.xhtml">tokenHashGet</a>()
+                    </li><li>private void <a title="Opine\Form" href="../classes/Opine_Form/tokenHashMatch.xhtml">tokenHashMatch</a>()
+                    </li><li>public void <a title="Opine\Form" href="../classes/Opine_Form/showTopics.xhtml">showTopics</a>()
+                    </li><li>public void <a title="Opine\Form" href="../classes/Opine_Form/showMarker.xhtml">showMarker</a>()
+                    </li><li>public void <a title="Opine\Form" href="../classes/Opine_Form/stored.xhtml">stored</a>()
+                    </li><li>public void <a title="Opine\Form" href="../classes/Opine_Form/after.xhtml">after</a>()
+                    </li><li>public void <a title="Opine\Form" href="../classes/Opine_Form/factory.xhtml">factory</a>()
+                    </li><li>public void <a title="Opine\Form" href="../classes/Opine_Form/parseFieldMethods.xhtml">parseFieldMethods</a>()
+                    </li><li>public void <a title="Opine\Form" href="../classes/Opine_Form/json.xhtml">json</a>()
+                    </li><li>private static void <a title="Opine\Form" href="../classes/Opine_Form/date.xhtml">date</a>()
+                    </li><li>public void <a title="Opine\Form" href="../classes/Opine_Form/sanitize.xhtml">sanitize</a>()
+                    </li><li>public void <a title="Opine\Form" href="../classes/Opine_Form/validate.xhtml">validate</a>()
+                    </li><li>private static void <a title="Opine\Form" href="../classes/Opine_Form/fieldValidateRequired.xhtml">fieldValidateRequired</a>()
+                    </li><li>public void <a title="Opine\Form" href="../classes/Opine_Form/responseSuccess.xhtml">responseSuccess</a>()
+                    </li><li>public void <a title="Opine\Form" href="../classes/Opine_Form/responseError.xhtml">responseError</a>()
+                    </li><li>private void <a title="Opine\Form" href="../classes/Opine_Form/validatePaths.xhtml">validatePaths</a>()
+                    </li><li>private void <a title="Opine\Form" href="../classes/Opine_Form/formType.xhtml">formType</a>()
+                    </li><li>private void <a title="Opine\Form" href="../classes/Opine_Form/bundleNameSpace.xhtml">bundleNameSpace</a>()
+                    </li><li>public void <a title="Opine\Form" href="../classes/Opine_Form/view.xhtml">view</a>()
+                    </li><li>public void <a title="Opine\Form" href="../classes/Opine_Form/viewJson.xhtml">viewJson</a>()
+                    </li><li>public void <a title="Opine\Form" href="../classes/Opine_Form/upsert.xhtml">upsert</a>()
+                    </li><li>private void <a title="Opine\Form" href="../classes/Opine_Form/showTopic.xhtml">showTopic</a>()
+                    </li><li>public void <a title="Opine\Form" href="../classes/Opine_Form/delete.xhtml">delete</a>()
+                    </li><li>public void <a title="Opine\Form" href="../classes/Opine_Form/markerToClassName.xhtml">markerToClassName</a>()
+                    </li><li>public void <a title="Opine\Form" href="../classes/Opine_Form/markerToClass.xhtml">markerToClass</a>()
+                    </li></ul>
+
+            }<br/></div>
+        <h2 id="members">Members</h2>
+        <div xmlns:git="http://xml.phpdox.net/gitlog#" class="styled members">
+          <h4>private</h4>
+          <ul class="members">
+            <li id="db">
+              <strong>$db</strong>
+            </li>
+            <li id="field">
+              <strong>$field</strong>
+            </li>
+            <li id="formStorage">
+              <strong>$formStorage</strong>
+            </li>
+            <li id="post">
+              <strong>$post</strong>
+            </li>
+            <li id="root">
+              <strong>$root</strong>
+            </li>
+            <li id="separation">
+              <strong>$separation</strong>
+            </li>
+            <li id="showMarker">
+              <strong>$showMarker</strong>
+            </li>
+            <li id="showTopics">
+              <strong>$showTopics</strong>
+            </li>
+            <li id="topic">
+              <strong>$topic</strong>
+            </li>
+          </ul>
+        </div>
+        <h2 id="methods">Methods</h2>
+        <div xmlns:git="http://xml.phpdox.net/gitlog#" class="styled">
+          <h4>private</h4>
+          <ul>
+            <li id="bundleNameSpace">
+              <a title="Opine\Form" href="../classes/Opine_Form/bundleNameSpace.xhtml">bundleNameSpace()</a>
+            </li>
+            <li id="date">
+              <a title="Opine\Form" href="../classes/Opine_Form/date.xhtml">date()</a>
+            </li>
+            <li id="fieldValidateRequired">
+              <a title="Opine\Form" href="../classes/Opine_Form/fieldValidateRequired.xhtml">fieldValidateRequired()</a>
+            </li>
+            <li id="formType">
+              <a title="Opine\Form" href="../classes/Opine_Form/formType.xhtml">formType()</a>
+            </li>
+            <li id="showTopic">
+              <a title="Opine\Form" href="../classes/Opine_Form/showTopic.xhtml">showTopic()</a>
+            </li>
+            <li id="tokenHashMatch">
+              <a title="Opine\Form" href="../classes/Opine_Form/tokenHashMatch.xhtml">tokenHashMatch()</a>
+            </li>
+            <li id="validatePaths">
+              <a title="Opine\Form" href="../classes/Opine_Form/validatePaths.xhtml">validatePaths()</a>
+            </li>
+          </ul>
+          <h4>public</h4>
+          <ul>
+            <li id="__construct">
+              <a title="Opine\Form" href="../classes/Opine_Form/__construct.xhtml">__construct()</a>
+            </li>
+            <li id="after">
+              <a title="Opine\Form" href="../classes/Opine_Form/after.xhtml">after()</a>
+            </li>
+            <li id="delete">
+              <a title="Opine\Form" href="../classes/Opine_Form/delete.xhtml">delete()</a>
+            </li>
+            <li id="factory">
+              <a title="Opine\Form" href="../classes/Opine_Form/factory.xhtml">factory()</a>
+            </li>
+            <li id="json">
+              <a title="Opine\Form" href="../classes/Opine_Form/json.xhtml">json()</a>
+            </li>
+            <li id="markerToClass">
+              <a title="Opine\Form" href="../classes/Opine_Form/markerToClass.xhtml">markerToClass()</a>
+            </li>
+            <li id="markerToClassName">
+              <a title="Opine\Form" href="../classes/Opine_Form/markerToClassName.xhtml">markerToClassName()</a>
+            </li>
+            <li id="parseFieldMethods">
+              <a title="Opine\Form" href="../classes/Opine_Form/parseFieldMethods.xhtml">parseFieldMethods()</a>
+            </li>
+            <li id="responseError">
+              <a title="Opine\Form" href="../classes/Opine_Form/responseError.xhtml">responseError()</a>
+            </li>
+            <li id="responseSuccess">
+              <a title="Opine\Form" href="../classes/Opine_Form/responseSuccess.xhtml">responseSuccess()</a>
+            </li>
+            <li id="sanitize">
+              <a title="Opine\Form" href="../classes/Opine_Form/sanitize.xhtml">sanitize()</a>
+            </li>
+            <li id="showMarker">
+              <a title="Opine\Form" href="../classes/Opine_Form/showMarker.xhtml">showMarker()</a>
+            </li>
+            <li id="showTopics">
+              <a title="Opine\Form" href="../classes/Opine_Form/showTopics.xhtml">showTopics()</a>
+            </li>
+            <li id="stored">
+              <a title="Opine\Form" href="../classes/Opine_Form/stored.xhtml">stored()</a>
+            </li>
+            <li id="tokenHashGet">
+              <a title="Opine\Form" href="../classes/Opine_Form/tokenHashGet.xhtml">tokenHashGet()</a>
+            </li>
+            <li id="upsert">
+              <a title="Opine\Form" href="../classes/Opine_Form/upsert.xhtml">upsert()</a>
+            </li>
+            <li id="validate">
+              <a title="Opine\Form" href="../classes/Opine_Form/validate.xhtml">validate()</a>
+            </li>
+            <li id="view">
+              <a title="Opine\Form" href="../classes/Opine_Form/view.xhtml">view()</a>
+            </li>
+            <li id="viewJson">
+              <a title="Opine\Form" href="../classes/Opine_Form/viewJson.xhtml">viewJson()</a>
+            </li>
+          </ul>
+        </div>
+      </section>
+    </div>
+    <footer xmlns:git="http://xml.phpdox.net/gitlog#">
+      <span>Generated using phpDox 0.6.6 - Copyright (C) 2010 - 2014 by Arne Blankerts</span>
+    </footer>
+  </body>
+</html>

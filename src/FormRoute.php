@@ -43,6 +43,25 @@ class FormRoute {
         $this->root = $root;
     }
 
+    public function paths () {
+        $this->route->get('/json-form/{form}', 'formRoute@jsonFields');
+        $this->route->get('/json-form/{form}/{id}', 'formRoute@jsonFields');
+        $this->route->get('/{bundle}/json-form/{form}', 'formRoute@jsonBundleFields');
+        $this->route->get('/{bundle}/json-form/{form}/{id}', 'formRoute@jsonBundleFields');
+        $this->route->get('/form/{form}', 'formRoute@view');
+        $this->route->get('/form/{form}.html', 'formRoute@view');
+        $this->route->get('/form/{form}/{dbURI}', 'formRoute@view');
+        $this->route->get('/{bundle}/form/{form}', 'formRoute@bundleView');
+        $this->route->get('/{bundle}/form/{form}.html', 'formRoute@bundleView');
+        $this->route->get('/{bundle}/form/{form}/{dbURI}', 'formRoute@bundleView');
+        $this->route->post('/form/{form}', 'formRoute@update');
+        $this->route->post('/form/{form}/{dbURI}', 'formRoute@update');
+        $this->route->post('/{bundle}/form/{form}', 'formRoute@bundleUpdate');
+        $this->route->post('/{bundle}/form/{form}/{dbURI}', 'formRoute@bundleUpdate');
+        $this->route->delete('/form/{form}/{dbURI}', 'formRoute@delete');
+        $this->route->delete('/{bundle}/form/{form}/{dbURI}', 'formRoute@bundleDelete');
+    }
+
     public function cacheSet ($cache) {
         $this->cache = $cache;
     }
@@ -116,25 +135,6 @@ class FormRoute {
             $token = $_GET['form-token'];
         }
         echo $this->form->delete($this->form->markerToClass($bundle . '__Form__' . $form), $dbURI, $token);
-    }
-
-    public function paths () {
-        $this->route->get('/json-form/{form}', 'formRoute@jsonFields');
-        $this->route->get('/json-form/{form}/{id}', 'formRoute@jsonFields');
-        $this->route->get('/{bundle}/json-form/{form}', 'formRoute@jsonBundleFields');
-        $this->route->get('/{bundle}/json-form/{form}/{id}', 'formRoute@jsonBundleFields');
-        $this->route->get('/form/{form}', 'formRoute@view');
-        $this->route->get('/form/{form}.html', 'formRoute@view');
-        $this->route->get('/form/{form}/{dbURI}', 'formRoute@view');
-        $this->route->get('/{bundle}/form/{form}', 'formRoute@bundleView');
-        $this->route->get('/{bundle}/form/{form}.html', 'formRoute@bundleView');
-        $this->route->get('/{bundle}/form/{form}/{dbURI}', 'formRoute@bundleView');
-        $this->route->post('/form/{form}', 'formRoute@update');
-        $this->route->post('/form/{form}/{dbURI}', 'formRoute@update');
-        $this->route->post('/{bundle}/form/{form}', 'formRoute@bundleUpdate');
-        $this->route->post('/{bundle}/form/{form}/{dbURI}', 'formRoute@bundleUpdate');
-        $this->route->delete('/form/{form}/{dbURI}', 'formRoute@delete');
-        $this->route->delete('/{bundle}/form/{form}/{dbURI}', 'formRoute@bundleDelete');
     }
 
     private static function stubRead ($name, &$collection, $url, $root) {

@@ -112,7 +112,7 @@ class Form {
             echo 'Form marker: ', $formObject->marker, "\n";
         }
         $formObject->document = new \ArrayObject();
-        if ($dbURI !== false) {
+        if (!empty($dbURI)) {
             $document = $this->db->documentStage($dbURI)->current();
             if (isset($document['_id'])) {
                 $formObject->document = new \ArrayObject($document);
@@ -368,14 +368,20 @@ class Form {
         $this->showTopic($topic);
         $this->topic->publish($topic, $context);
         $this->topic->publish('Form-save', $context);
-        if ($formObject->bundle !== false) {
-            $this->topic->publish($formObject->bundle . '-Form-save');
+        if (isset($formObject->bundle) && !empty($formObject->bundle)) {
+            $this->topic->publish($formObject->bundle . '-Form-save', $context);
+        }
+        if (isset($formObject->topicSave) && !empty($formObject->topicSave)) {
+            $this->topic->publish($formObject->topicSave, $context);
         }
         if ($this->post->statusCheck() == 'saved') {
             $topic = $formObject->marker . '-saved';
             $this->topic->publish('Form-saved', $context);
-            if ($formObject->bundle !== false) {
-                $this->topic->publish($formObject->bundle . '-Form-saved');
+            if (isset($formObject->bundle) && !empty($formObject->bundle)) {
+                $this->topic->publish($formObject->bundle . '-Form-saved', $context);
+            }
+            if (isset($formObject->topicSaved) && !empty($formObject->topicSaved)) {
+                $this->topic->publish($formObject->topicSaved, $context);
             }
             $this->showTopic($topic);
             $this->topic->publish($topic, $context);
@@ -411,14 +417,20 @@ class Form {
         $this->showTopic($topic);
         $this->topic->publish($topic, $context);
         $this->topic->publish('Form-delete', $context);
-        if ($formObject->bundle !== false) {
-            $this->topic->publish($formObject->bundle . '-Form-delete');
+        if (isset($formObject->bundle) && !empty($formObject->bundle)) {
+            $this->topic->publish($formObject->bundle . '-Form-delete', $context);
+        }
+        if (isset($formObject->topicDelete) && !empty($formObject->topicDelete)) {
+            $this->topic->publish($formObject->topicDelete, $context);
         }
         if ($this->post->statusCheck() == 'deleted') {
             $topic = $formObject->marker . '-deleted';
             $this->topic->publish('Form-deleted', $context);
-            if ($formObject->bundle !== false) {
-                $this->topic->publish($formObject->bundle . '-Form-deleted');
+            if (isset($formObject->bundle) && !empty($formObject->bundle)) {
+                $this->topic->publish($formObject->bundle . '-Form-deleted', $context);
+            }
+            if (isset($formObject->topicDeleted) && !empty($formObject->topicDeleted)) {
+                $this->topic->publish($formObject->topicDeleted, $context);
             }
             $this->showTopic($topic);
             $this->topic->publish($topic, $context);
