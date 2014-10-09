@@ -173,7 +173,8 @@ class FormRoute {
             $filename = $root . '/partials/forms/' . $form . '.hbs';
             if (!file_exists($filename)) {
                 $data = file_get_contents($rootProject . '/vendor/opine/build/static/form.hbs');
-                $formObject = $this->form->factory($form, false, $bundle);
+                $className = '\\Form\\' . $form;
+                $formObject = $this->form->factory(new $className);
                 $buffer = '';
                 $buffer .= '
 <form class="ui form segment" data-xhr="true" method="post">' . "\n";
