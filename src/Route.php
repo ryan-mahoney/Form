@@ -32,21 +32,21 @@ class Route {
 	}
 
 	public function paths () {
-        $this->route->get('/api/form/{form}', 'formCollecion@json');
-        $this->route->get('/api/form/{form}/{id}', 'formCollecion@json');
-        $this->route->get('/{bundle}/api/form/{form}', 'formCollecion@jsonBundle');
-        $this->route->get('/{bundle}/api/form/{form}/{id}', 'formCollecion@jsonBundle');
-        $this->route->get('/form/{form}', 'formCollecion@html');
-        $this->route->get('/form/{form}.html', 'formCollecion@html');
-        $this->route->get('/form/{form}/{dbURI}', 'formCollecion@html');
-        $this->route->get('/{bundle}/form/{form}', 'formCollecion@bundleHtml');
-        $this->route->get('/{bundle}/form/{form}.html', 'formCollecion@bundleHtml');
-        $this->route->get('/{bundle}/form/{form}/{dbURI}', 'formCollecion@bundleHtml');
-        $this->route->post('/form/{form}', 'formCollecion@update');
-        $this->route->post('/form/{form}/{dbURI}', 'formCollecion@update');
-        $this->route->post('/{bundle}/form/{form}', 'formCollecion@bundleUpdate');
-        $this->route->post('/{bundle}/form/{form}/{dbURI}', 'formCollecion@bundleUpdate');
-        $this->route->delete('/form/{form}/{dbURI}', 'formCollecion@delete');
-        $this->route->delete('/{bundle}/form/{form}/{dbURI}', 'formCollecion@bundleDelete');
+        $this->route->get('/api/form/{form}', 'formController@json');
+        $this->route->get('/api/form/{form}/{id}', 'formController@json');
+        $this->route->get('/{bundle}/api/form/{form}', 'formController@jsonBundle');
+        $this->route->get('/{bundle}/api/form/{form}/{id}', 'formController@jsonBundle');
+        $this->route->get('/form/{form}', 'formController@html');
+        $this->route->get('/form/{form}.html', 'formController@html');
+        $this->route->get('/form/{form}/{dbURI}', 'formController@html');
+        $this->route->get('/{bundle}/form/{form}', 'formController@bundleHtml');
+        $this->route->get('/{bundle}/form/{form}.html', 'formController@bundleHtml');
+        $this->route->get('/{bundle}/form/{form}/{dbURI}', 'formController@bundleHtml');
+        $this->route->post('/form/{form}', 'formController@update');
+        $this->route->post('/form/{form}/{dbURI}', 'formController@update');
+        $this->route->post('/{bundle}/form/{form}', 'formController@bundleUpdate');
+        $this->route->post('/{bundle}/form/{form}/{dbURI}', 'formController@bundleUpdate');
+        $this->route->delete('/form/{form}/{dbURI}', 'formController@delete');
+        $this->route->delete('/{bundle}/form/{form}/{dbURI}', 'formController@bundleDelete');
     }
 }

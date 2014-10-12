@@ -232,10 +232,14 @@ class FormTest extends PHPUnit_Framework_TestCase {
         $this->formView->html(
             new \Form\Contact(),
             'app/forms/contact.yml',
-            __DIR__ . '/../public/layouts/forms/contact.html'
+            'forms/contact'
         );
         $markup = ob_get_clean();
         $found = false;
+
+echo $markup, "\n\n";
+exit;
+
         if (substr_count($markup, '<input type="text" placeholder="First Name" name="Form__Contact[first_name]"') == 1) {
             $found = true;
         }
