@@ -1,0 +1,16 @@
+services:
+    formRoute:
+        class:     'Opine\Form\Route'
+        arguments: ['@route']
+    form:
+        class:     'Opine\Form\Service'
+        arguments: ['%root%', '@field', '@post', '@db', '@topic']
+    formController:
+        class:     'Opine\Form\Controller'
+        arguments: ['@formModel', '@formView', '@form']
+    formModel:
+        class:     'Opine\Form\Model'
+        arguments: ['%root%', '@form']
+    formView:
+        class:     'Opine\Form\View'
+        arguments: ['@separation']

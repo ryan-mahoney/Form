@@ -1,6 +1,6 @@
 <?php
 /**
- * Opine\FormRoute
+ * Opine\Form\Model
  *
  * Copyright (c)2013, 2014 Ryan Mahoney, https://github.com/Opine-Org <ryan@virtuecenter.com>
  *
@@ -22,119 +22,19 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-namespace Opine;
+namespace Opine\Form;
 
-class FormRoute {
-    private $separation;
-    private $post;
-    private $route;
-    private $topic;
-    private $field;
-    private $root;
-    public $cache = false;
+class Model {
+	private $root;
+	private $service;
 
-    public function __construct ($root, $route, $form, $field, $post, $separation, $topic) {
-        $this->route = $route;
-        $this->post = $post;
-        $this->form = $form;
-        $this->separation = $separation;
-        $this->topic = $topic;
-        $this->field = $field;
-        $this->root = $root;
-    }
-
-    public function paths () {
-        $this->route->get('/json-form/{form}', 'formRoute@jsonFields');
-        $this->route->get('/json-form/{form}/{id}', 'formRoute@jsonFields');
-        $this->route->get('/{bundle}/json-form/{form}', 'formRoute@jsonBundleFields');
-        $this->route->get('/{bundle}/json-form/{form}/{id}', 'formRoute@jsonBundleFields');
-        $this->route->get('/form/{form}', 'formRoute@view');
-        $this->route->get('/form/{form}.html', 'formRoute@view');
-        $this->route->get('/form/{form}/{dbURI}', 'formRoute@view');
-        $this->route->get('/{bundle}/form/{form}', 'formRoute@bundleView');
-        $this->route->get('/{bundle}/form/{form}.html', 'formRoute@bundleView');
-        $this->route->get('/{bundle}/form/{form}/{dbURI}', 'formRoute@bundleView');
-        $this->route->post('/form/{form}', 'formRoute@update');
-        $this->route->post('/form/{form}/{dbURI}', 'formRoute@update');
-        $this->route->post('/{bundle}/form/{form}', 'formRoute@bundleUpdate');
-        $this->route->post('/{bundle}/form/{form}/{dbURI}', 'formRoute@bundleUpdate');
-        $this->route->delete('/form/{form}/{dbURI}', 'formRoute@delete');
-        $this->route->delete('/{bundle}/form/{form}/{dbURI}', 'formRoute@bundleDelete');
-    }
+	public function __construct ($root, $service) {
+		$this->root = $root;
+		$this->service = $service;
+	}
 
     public function cacheSet ($cache) {
         $this->cache = $cache;
-    }
-
-    private function jsonDecorate ($json) {
-        $head = '';
-        $tail = '';
-        if (isset($_GET['pretty'])) {
-            $head = '<html><head></head><body style="margin:0; border:0; padding: 0"><textarea wrap="off" style="overflow: auto; margin:0; border:0; padding: 0; width:100%; height: 100%">';
-            $tail = '</textarea></body></html>';
-        } elseif (isset($_GET['callback'])) {
-            $head = $_GET['callback'] . '(';
-            $tail = ');';
-        }
-        return $head . $json . $tail;
-    }
-
-    public function jsonFields ($form, $id=false) {
-        if (isset($_GET['id']) && $id === false) {
-            $id = $_GET['id'];
-        }
-        $className = '\Form\\' . $form;
-        echo $this->jsonDecorate($this->form->json($this->form->factory(new $className, $id), $id));
-    }
-
-    public function jsonBundleFields ($bundle, $form, $id=false) {
-        if (isset($_GET['id']) && $id === false) {
-            $id = $_GET['id'];
-        }
-        $className = '\\' . $bundle . '\Form\\' . $form;
-        echo $this->jsonDecorate($this->form->json($this->form->factory(new $className, $id), $id));        
-    }
-
-    public function view ($form, $dbURI=false) {
-        $this->form->view(
-            $this->form->markerToClass('Form__' . $form),
-            'app/forms/' . strtolower($form) . '.yml',
-            'public/layouts/forms/' . strtolower($form) . '.html',
-            $dbURI
-        );
-    }
-
-    public function bundleView ($bundle, $form, $dbURI=false) {
-        $this->form->view(
-            $this->form->markerToClass($bundle . '__Form__' . $form),
-            'bundles/' . $bundle . '/app/forms/' . strtolower($form) . '.yml',
-            'public/layouts/' . $bundle . '/forms/' . strtolower($form) . '.html',
-            $dbURI
-        );
-    }
-
-    public function update ($form, $dbURI=false) {
-        echo $this->form->upsert($this->form->markerToClass('Form__' . $form), $dbURI);
-    }
-
-    public function bundleUpdate ($bundle, $form, $dbURI=false) {
-        echo $this->form->upsert($this->form->markerToClass($bundle . '__Form__' . $form), $dbURI);
-    }
-
-    public function delete ($form, $dbURI) {
-        $token = false;
-        if (isset($_GET['form-token'])) {
-            $token = $_GET['form-token'];
-        }
-        echo $this->form->delete($this->form->markerToClass('Form__' . $form), $dbURI, $token);
-    }
-
-    public function bundleDelete ($bundle, $form, $dbURI) {
-        $token = false;
-        if (isset($_GET['form-token'])) {
-            $token = $_GET['form-token'];
-        }
-        echo $this->form->delete($this->form->markerToClass($bundle . '__Form__' . $form), $dbURI, $token);
     }
 
     private static function stubRead ($name, &$collection, $url, $root) {
@@ -174,7 +74,7 @@ class FormRoute {
             if (!file_exists($filename)) {
                 $data = file_get_contents($rootProject . '/vendor/opine/build/static/form.hbs');
                 $className = '\\Form\\' . $form;
-                $formObject = $this->form->factory(new $className);
+                $formObject = $this->service->factory(new $className);
                 $buffer = '';
                 $buffer .= '
 <form class="ui form segment" data-xhr="true" method="post">' . "\n";

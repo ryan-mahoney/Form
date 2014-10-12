@@ -1,3 +1,7 @@
+imports:
+    - 'package-container.yml'
+    - 'vendor/opine/route/package-container.yml'
+
 services:
     cache:
         class:     'Opine\Cache'
@@ -12,12 +16,6 @@ services:
         arguments: ['@config', '@topic']
     yamlSlow:
         class:     'Symfony\Component\Yaml\Yaml'
-    formRoute:
-        class:     'Opine\FormRoute'
-        arguments: ['%root%', '@route', '@form', '@field', '@post', '@separation', '@topic']
-    form:
-        class:     'Opine\Form'
-        arguments: ['%root%', '@field', '@post', '@db', '@separation', '@topic']
     separation:
         class:     'Opine\Separation'
         arguments: ['%root%', '@handlebars', '@cache', '@config', '@yamlSlow', '@route']
@@ -30,13 +28,6 @@ services:
         class:     'Opine\FieldRoute'
     post:
         class:     'Opine\HTTPPost'
-    route:
-        class:     'Opine\Route'
-        arguments: ['@fastrouteCollector']
-    fastrouteCollector:
-        class:     'FastRoute\RouteCollector'
-        arguments: ['@fastrouteParser', '@fastrouteGenerator']
-    fastrouteParser:
-        class:     'FastRoute\RouteParser\Std'
-    fastrouteGenerator:
-        class:     'FastRoute\DataGenerator\GroupCountBased'
+    test:
+        class:     'Opine\Form\TestService'
+        arguments: ['@post']

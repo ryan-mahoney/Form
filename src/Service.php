@@ -1,6 +1,6 @@
 <?php
 /**
- * Opine\Form
+ * Opine\Form\Service
  *
  * Copyright (c)2013, 2014 Ryan Mahoney, https://github.com/Opine-Org <ryan@virtuecenter.com>
  *
@@ -22,26 +22,28 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-namespace Opine;
+namespace Opine\Form;
+use ArrayObject;
+use MongoId;
+use ReflectionClass;
+use Exception;
 
-class Form {
+class Service {
     private $root;
     private $field;
     private $post;
     private $db;
     private $formStorage;
-    private $separation;
     private $topic;
     private $showTopics = false;
     private $showMarker = false;
 
-    public function __construct ($root, $field, $post, $db, $separation, $topic) {
+    public function __construct ($root, $field, $post, $db, $topic) {
         $this->root = $root;
         $this->field = $field;
         $this->post = $post;
         $this->db = $db;
         $this->formStorage = [];
-        $this->separation = $separation;
         $this->topic = $topic;
     }
 
@@ -96,7 +98,7 @@ class Form {
                 break;
 
             default:
-                throw new \Exception('Unknown form "after" mode set');
+                throw new Exception('Unknown form "after" mode set');
         }
     }
 
@@ -111,15 +113,15 @@ class Form {
         if ($this->showMarker === true) {
             echo 'Form marker: ', $formObject->marker, "\n";
         }
-        $formObject->document = new \ArrayObject();
+        $formObject->document = new ArrayObject();
         if (!empty($dbURI)) {
             $document = $this->db->documentStage($dbURI)->current();
             if (isset($document['_id'])) {
-                $formObject->document = new \ArrayObject($document);
+                $formObject->document = new ArrayObject($document);
             }
         }
         if ($dbURI === false) {
-            $formObject->id = $formObject->storage['collection'] . ':' . new \MongoId();
+            $formObject->id = $formObject->storage['collection'] . ':' . new MongoId();
         } else {
             $formObject->id = $dbURI;
         }
@@ -128,14 +130,14 @@ class Form {
     }
 
     public function parseFieldMethods ($object) {
-        $reflector = new \ReflectionClass($object);
+        $reflector = new ReflectionClass($object);
         $methods = $reflector->getMethods();
         $fields = [];
         foreach ($methods as $method) {
             if (preg_match('/Field$/', (string)$method->name) == 0) {
                 continue;
             }
-            $data = new \ArrayObject($method->invoke($object));
+            $data = new ArrayObject($method->invoke($object));
             $fields[$data['name']] = $data;
         }
         return $fields;
@@ -172,7 +174,7 @@ class Form {
         if (isset($formObject->document['created_date'])) {
             $out['created_date'] = self::date($formObject->document['created_date']);
         }
-        $out['id_spare'] = (string)new \MongoId();
+        $out['id_spare'] = (string)new MongoId();
         $out['id'] = '<input type="hidden" name="' . $formObject->marker . '[id]" value="' . (string)$formObject->id . '" />';
         $out['form-token'] = '<input type="hidden" name="' . $formObject->marker . '[form-token]" value="' . $formObject->token . '" />';
         return json_encode($out, JSON_PRETTY_PRINT);
@@ -191,7 +193,7 @@ class Form {
 
     public function sanitize ($formObject) {
         if ($this->post->{$formObject->marker} === false) {
-            throw new \Exception('form not in post');
+            throw new Exception('form not in post');
         }
         $formPost = $this->post->{$formObject->marker};
         foreach ($formObject->fields as $field) {
@@ -295,20 +297,6 @@ class Form {
         ], JSON_HEX_AMP);
     }
 
-    private function validatePaths (Array &$paths) {
-        foreach (['layout', 'app'] as $type) {
-            if (!isset($paths[$type])) {
-                throw new FormPathException('Can not find ' . $type);
-            }
-        }
-        if (!class_exists($paths['form'])) {
-            throw new \Exception('bad form class: ' . $form);
-        }
-        if (!isset($paths['name'])) {
-            $paths['name'] = array_pop(explode('\\', $paths['form']));
-        }
-    }
-
     private function formType ($form) {
         if (substr_count($form, 'managers/') > 0) {
             return 'Manager';
@@ -328,19 +316,6 @@ class Form {
         return '';
     }
 
-    public function view ($formObject, $app, $layout, $id=false) {
-        $args = [];
-        if ($id != false) {
-            $args['id'] = $id;
-        }
-        //$this->validatePaths($paths);
-        $this->separation->app($app)->
-            layout($layout)->
-            args(str_replace('\\', '__', get_class($formObject)), $args)->
-            template()->
-            write();
-    }
-
     public function viewJson ($formObject, $id=false) {
         $formObject = $this->form->factory($formObject, $id);
         echo $this->form->json($formObject, $id);
@@ -352,7 +327,7 @@ class Form {
             if (isset($this->post->{$formObject->marker}['id'])) {
                 $id = $this->post->{$formObject->marker}['id'];
             } else {
-                throw new \Exception('ID not supplied in post.');
+                throw new Exception('ID not supplied in post.');
             }
         }
         $context = [
@@ -401,7 +376,7 @@ class Form {
     public function delete ($formObject, $id, $token) {
         $formObject = $this->factory($formObject, $id);
         if ($id === false) {
-            throw new \Exception('ID not supplied in post.');
+            throw new Exception('ID not supplied in post.');
         }
         if (!$this->tokenHashMatch(['form-token' => $token], $formObject)) {
             $passed = false;
@@ -449,5 +424,3 @@ class Form {
         return new $class();
     }
 }
-
-class FormUnknownException extends \Exception {}
