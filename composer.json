@@ -24,7 +24,9 @@
         "opine\/pubsub": "dev-master",
         "opine\/container": "dev-master",
         "opine\/db": "dev-master",
-        "opine\/route": "dev-master"
+        "opine\/route": "dev-master",
+        "opine\/bundle": "dev-master",
+        "opine\/cache": "dev-master"
     },
     "autoload": {
         "psr-4": {

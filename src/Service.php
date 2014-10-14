@@ -304,18 +304,6 @@ class Service {
         return 'Form';
     }
 
-    private function bundleNameSpace ($path, &$bundle='') {
-        $parts = explode('/', $path);
-        $length = count($parts);
-        for ($i=0; $i < $length; $i++) {
-            if ($parts[$i] == 'bundles') {
-                $bundle = $parts[($i + 1)];
-                return $bundle . '\\';
-            }
-        }
-        return '';
-    }
-
     public function viewJson ($formObject, $id=false) {
         $formObject = $this->form->factory($formObject, $id);
         echo $this->form->json($formObject, $id);

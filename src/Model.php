@@ -27,52 +27,66 @@ namespace Opine\Form;
 class Model {
 	private $root;
 	private $service;
+    private $cacheService;
+    private $bundleRoute;
+    private $cacheFile;
+    private $cacheKey;
 
-	public function __construct ($root, $service) {
+	public function __construct ($root, $service, $bundleRoute) {
 		$this->root = $root;
-		$this->service = $service;
+        $this->cacheFile = $root . '/../forms/cache.json';
+        $this->bundleRoute = $bundleRoute;
 	}
 
     public function cacheSet ($cache) {
         $this->cache = $cache;
     }
 
+    private function cacheWrite ($cache) {
+        file_put_contents($this->cacheFile, json_encode($cache, JSON_PRETTY_PRINT));
+    }
+
     private static function stubRead ($name, &$collection, $url, $root) {
         return str_replace(['{{$url}}', '{{$plural}}', '{{$singular}}'], [$url, $collection['p'], $collection['s']], $data);
     }
 
-    public function build ($root=false, $url=false, $bundle='') {
-        if ($root === false) {
-            $root = $this->root;
+    private function directoryScan ($path, &$forms, $namespace='') {
+        if ($namespace != '') {
+            $namespace .= '\\';
         }
-        $rootProject = $root . '/..';
-        $bundlePath = '';
-        if ($bundle != '') {
-            $bundlePath = $bundle . '/';
-            $tmp = explode('/', $root);
-            array_pop($tmp);
-            array_pop($tmp);
-            array_pop($tmp);
-            $rootProject = implode('/', $tmp);
-        }
-        $cache = [];
-        $dirFiles = glob($root . '/../forms/*.php');
+        $dirFiles = glob($path);
         foreach ($dirFiles as $form) {
-            $class = basename($form, '.php');
-            $cache[] = $class;
+            $form = basename($form, '.php');
+            $className = $namespace . 'Form\\' . $form;
+            $forms[] = [
+                'class'     => $className,
+                'fullname'  => str_replace('\\', '__', $className),
+                'name'      => $form,
+                'layout'    => $this->root . '/layouts/' . str_replace('\\', '/', $namespace) . 'forms/' . $form . '.html',
+                'partial'   => $this->root . '/partials/' . str_replace('\\', '/', $namespace) . 'forms/' . $form . '.hbs',
+                'app'       => ($namespace == '') 
+                                ? $this->root . '/../app/forms/' . $form . '.yml'
+                                : $this->root . '/../bundles/' . str_replace('\\', '/', $namespace) . 'app/forms/' . $form . '.yml'
+            ];
         }
-        $json = json_encode($cache, JSON_PRETTY_PRINT);
-        file_put_contents($root . '/../forms/cache.json', $json);
-        foreach ($cache as $form) {
-            $filename = $root . '/layouts/forms/' . $form . '.html';
-            if (!file_exists($filename)) {
-                $data = file_get_contents($rootProject . '/vendor/opine/build/static/form.html');
+    }
+
+    public function build () {
+        $forms = [];
+        $this->directoryScan($this->root . '/../forms/*.php', $forms);
+        $bundles = $this->bundleRoute->bundles();
+        foreach ($bundles as $bundle) {
+            $this->directoryScan($bundle['root'] . '/../collections/*.php', $forms, $bundle['name']);
+        }
+        $this->cacheWrite($forms);
+        foreach ($forms as $form) {
+            if (!file_exists($form['layout'])) {
+                $data = file_get_contents($this->root . '/../vendor/opine/build/static/form.html');
                 $data = str_replace(['{{$form}}'], [$form], $data);
-                file_put_contents($filename, $data);
+                file_put_contents($form['layout'], $data);
             }
-            $filename = $root . '/partials/forms/' . $form . '.hbs';
-            if (!file_exists($filename)) {
-                $data = file_get_contents($rootProject . '/vendor/opine/build/static/form.hbs');
+            if (!file_exists($form['partial'])) {
+                $data = file_get_contents($this->root . '/../vendor/opine/build/static/form.hbs');
                 $className = '\\Form\\' . $form;
                 $formObject = $this->service->factory(new $className);
                 $buffer = '';
@@ -96,18 +110,15 @@ class Model {
     <input type="submit" class="ui blue submit button" value="Submit" />
 </form>';
                 $data = str_replace(['{{$form}}', '{{$generated}}'], [$form, $buffer], $data);
-                file_put_contents($filename, $data);
+                file_put_contents($form['partial'], $data);
             }
-            if ($url !== false) {
-                $filename = $root . '/../app/forms/' . $form . '.yml';
-                if (!file_exists($filename)) {
-                    $data = file_get_contents($rootProject . '/vendor/opine/build/static/app-form.yml');
-                    $data = str_replace(['{{$form}}', '{{$url}}'], [$form, $url], $data);
-                    file_put_contents($filename, $data);
-                }
+            if (!file_exists($form['app'])) {
+                $data = file_get_contents($rootProject . '/vendor/opine/build/static/app-form.yml');
+                $data = str_replace(['{{$form}}', '{{$url}}'], [$form, ''], $data);
+                file_put_contents($form['app'], $data);
             }
         }
-        return $json;
+        return json_encode($forms, JSON_PRETTY_PRINT);
     }
 
     public function upgrade ($root=false) {

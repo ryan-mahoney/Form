@@ -31,3 +31,6 @@ services:
     test:
         class:     'Opine\Form\TestService'
         arguments: ['@post']
+    bundleRoute:
+        class:     'Opine\BundleRoute'
+        arguments: ['%root%', '@container']
