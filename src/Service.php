@@ -107,7 +107,8 @@ class Service {
         $formObject->fields = $this->parseFieldMethods($formObject);
         $formObject->db = $this->db;
         $formObject->marker = str_replace('\\', '__', get_class($formObject));
-        $firstPiece = array_shift(explode('__', $formObject->marker));
+        $tmp = explode('__', $formObject->marker);
+        $firstPiece = array_shift($tmp);
         $formObject->bundle = (!in_array($firstPiece, ['Form', 'Manager'])) ? $firstPiece : '';
         $formObject->token = $this->tokenHashGet($formObject);
         if ($this->showMarker === true) {
