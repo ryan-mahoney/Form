@@ -35,16 +35,18 @@ class Service {
     private $db;
     private $formStorage;
     private $topic;
+    private $collection;
     private $showTopics = false;
     private $showMarker = false;
 
-    public function __construct ($root, $field, $post, $db, $topic) {
+    public function __construct ($root, $field, $post, $db, $collection, $topic) {
         $this->root = $root;
         $this->field = $field;
         $this->post = $post;
         $this->db = $db;
         $this->formStorage = [];
         $this->topic = $topic;
+        $this->collection = $collection;
     }
 
     public function tokenHashGet ($formObject) {
@@ -122,7 +124,15 @@ class Service {
             }
         }
         if ($dbURI === false) {
-            $formObject->id = $formObject->storage['collection'] . ':' . new MongoId();
+            if (property_exists($formObject, 'storage')) {
+                $formObject->id = $formObject->storage['collection'] . ':' . new MongoId();
+            } elseif (property_exists($formObject, 'collection')) {
+                $collection = $formObject->collection;
+                $collection = $this->collection->factory(new $collection());
+                $formObject->id = $collection->collection . ':' . new MongoId();
+            } else {
+                throw new Exception('Can not generate dbURI, unknown storage for form');
+            }
         } else {
             $formObject->id = $dbURI;
         }

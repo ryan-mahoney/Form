@@ -4,7 +4,7 @@ services:
         arguments: ['@route']
     form:
         class:     'Opine\Form\Service'
-        arguments: ['%root%', '@field', '@post', '@db', '@topic']
+        arguments: ['%root%', '@field', '@post', '@db', '@collection', '@topic']
     formController:
         class:     'Opine\Form\Controller'
         arguments: ['@formModel', '@formView', '@form']
