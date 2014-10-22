@@ -20,7 +20,7 @@
         "phpunit\/phpunit": "3.7.32",
         "opine\/field": "dev-master",
         "opine\/http": "dev-master",
-        "opine\/separation": "dev-master",
+        "opine\/layout": "dev-master",
         "opine\/pubsub": "dev-master",
         "opine\/container": "dev-master",
         "opine\/db": "dev-master",

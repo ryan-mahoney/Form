@@ -13,4 +13,4 @@ services:
         arguments: ['%root%', '@form', '@bundleRoute', '@cache']
     formView:
         class:     'Opine\Form\View'
-        arguments: ['@separation']
+        arguments: ['@layout']

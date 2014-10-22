@@ -34,7 +34,7 @@ class Model {
 
 	public function __construct ($root, $service, $bundleRoute) {
 		$this->root = $root;
-        $this->cacheFile = $root . '/../forms/cache.json';
+        $this->cacheFile = $root . '/../cache/forms.json';
         $this->bundleRoute = $bundleRoute;
 	}
 
@@ -50,23 +50,23 @@ class Model {
         return str_replace(['{{$url}}', '{{$plural}}', '{{$singular}}'], [$url, $collection['p'], $collection['s']], $data);
     }
 
-    private function directoryScan ($path, &$forms, $namespace='') {
-        if ($namespace != '') {
-            $namespace .= '\\';
+    private function directoryScan ($path, &$forms, $bundle='') {
+        if ($bundle != '') {
+            $bundle .= '\\';
         }
         $dirFiles = glob($path);
         foreach ($dirFiles as $form) {
             $form = basename($form, '.php');
-            $className = $namespace . 'Form\\' . $form;
+            $className = $bundle . 'Form\\' . $form;
             $forms[] = [
                 'class'     => $className,
                 'fullname'  => str_replace('\\', '__', $className),
                 'name'      => $form,
-                'layout'    => $this->root . '/layouts/' . str_replace('\\', '/', $namespace) . 'forms/' . $form . '.html',
-                'partial'   => $this->root . '/partials/' . str_replace('\\', '/', $namespace) . 'forms/' . $form . '.hbs',
-                'app'       => ($namespace == '') 
+                'layout'    => $this->root . '/layouts/' . str_replace('\\', '/', $bundle) . 'forms/' . $form . '.html',
+                'partial'   => $this->root . '/partials/' . str_replace('\\', '/', $bundle) . 'forms/' . $form . '.hbs',
+                'app'       => ($bundle == '') 
                                 ? $this->root . '/../app/forms/' . $form . '.yml'
-                                : $this->root . '/../bundles/' . str_replace('\\', '/', $namespace) . 'app/forms/' . $form . '.yml'
+                                : $this->root . '/../bundles/' . str_replace('\\', '/', $bundle) . 'app/forms/' . $form . '.yml'
             ];
         }
     }
