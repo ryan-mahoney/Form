@@ -1,11 +1,9 @@
 imports:
  - base.yml
  
-js:
-
-binding:
+regions:
     Form__Contact:
-        url: '%dataAPI%/Sample/json-form/Contact'
+        url: '/Sample/api/form/Contact'
         args: []
         partial: 'forms/contact.hbs'
         type: 'Form'

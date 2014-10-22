@@ -1,4 +1,4 @@
-binding:
+regions:
     Form__Contact:
         url: '/api/form/Contact'
         args: []
