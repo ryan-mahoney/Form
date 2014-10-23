@@ -297,6 +297,7 @@ class Service {
                 $response['function'] = $formObject->function;
                 break;
         }
+        $response = array_merge($this->post->responseFieldsGet(), $response);
         return json_encode($response, JSON_HEX_AMP);
     }
 
