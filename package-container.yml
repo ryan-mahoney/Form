@@ -10,7 +10,7 @@ services:
         arguments: ['@formModel', '@formView', '@form']
     formModel:
         class:     'Opine\Form\Model'
-        arguments: ['%root%', '@form', '@bundleRoute', '@cache']
+        arguments: ['%root%', '@form', '@bundleModel', '@cache']
     formView:
         class:     'Opine\Form\View'
         arguments: ['@layout']

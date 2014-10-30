@@ -28,14 +28,14 @@ class Model {
     private $root;
     private $service;
     private $cacheService;
-    private $bundleRoute;
+    private $bundleModel;
     private $cacheFile;
     private $cacheKey;
 
-    public function __construct ($root, $service, $bundleRoute) {
+    public function __construct ($root, $service, $bundleModel) {
         $this->root = $root;
         $this->cacheFile = $root . '/../cache/forms.json';
-        $this->bundleRoute = $bundleRoute;
+        $this->bundleModel = $bundleModel;
     }
 
     public function cacheSet ($cache) {
@@ -79,7 +79,7 @@ class Model {
     public function build () {
         $forms = [];
         $this->directoryScan($this->root . '/../forms/*.php', $forms);
-        $bundles = $this->bundleRoute->bundles();
+        $bundles = $this->bundleModel->bundles();
         foreach ($bundles as $bundle) {
             $this->directoryScan($bundle['root'] . '/../collections/*.php', $forms, $bundle['name']);
         }
