@@ -25,18 +25,18 @@
 namespace Opine\Form;
 
 class Model {
-	private $root;
-	private $service;
+    private $root;
+    private $service;
     private $cacheService;
     private $bundleRoute;
     private $cacheFile;
     private $cacheKey;
 
-	public function __construct ($root, $service, $bundleRoute) {
-		$this->root = $root;
+    public function __construct ($root, $service, $bundleRoute) {
+        $this->root = $root;
         $this->cacheFile = $root . '/../cache/forms.json';
         $this->bundleRoute = $bundleRoute;
-	}
+    }
 
     public function cacheSet ($cache) {
         $this->cache = $cache;
@@ -58,17 +58,22 @@ class Model {
         foreach ($dirFiles as $form) {
             $form = basename($form, '.php');
             $className = $bundle . 'Form\\' . $form;
+            $staticName = strtolower($this->toUnderscore($form));
             $forms[] = [
                 'class'     => $className,
                 'fullname'  => str_replace('\\', '__', $className),
                 'name'      => $form,
-                'layout'    => $this->root . '/layouts/' . str_replace('\\', '/', $bundle) . 'forms/' . $form . '.html',
-                'partial'   => $this->root . '/partials/' . str_replace('\\', '/', $bundle) . 'forms/' . $form . '.hbs',
+                'layout'    => $this->root . '/layouts/' . str_replace('\\', '/', $bundle) . 'forms/' . $staticName . '.html',
+                'partial'   => $this->root . '/partials/' . str_replace('\\', '/', $bundle) . 'forms/' . $staticName . '.hbs',
                 'app'       => ($bundle == '') 
                                 ? $this->root . '/../app/forms/' . $form . '.yml'
-                                : $this->root . '/../bundles/' . str_replace('\\', '/', $bundle) . 'app/forms/' . $form . '.yml'
+                                : $this->root . '/../bundles/' . str_replace('\\', '/', $bundle) . 'app/forms/' . $staticName . '.yml'
             ];
         }
+    }
+
+    private function toUnderscore ($value) {
+        return strtolower(preg_replace('/([a-z])([A-Z])/', '$1_$2', $value));
     }
 
     public function build () {
@@ -87,7 +92,7 @@ class Model {
             }
             if (!file_exists($form['partial'])) {
                 $data = file_get_contents($this->root . '/../vendor/opine/build/static/form.hbs');
-                $className = '\\Form\\' . $form;
+                $className = $form['class'];
                 $formObject = $this->service->factory(new $className);
                 $buffer = '';
                 $buffer .= '
@@ -113,7 +118,7 @@ class Model {
                 file_put_contents($form['partial'], $data);
             }
             if (!file_exists($form['app'])) {
-                $data = file_get_contents($rootProject . '/vendor/opine/build/static/app-form.yml');
+                $data = file_get_contents($this->root . '/../vendor/opine/build/static/app-form.yml');
                 $data = str_replace(['{{$form}}', '{{$url}}'], [$form, ''], $data);
                 file_put_contents($form['app'], $data);
             }
