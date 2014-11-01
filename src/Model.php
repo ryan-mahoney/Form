@@ -39,6 +39,13 @@ class Model {
     }
 
     public function cacheSet ($cache) {
+        if (empty($cache)) {
+            if (!file_exists($this->cacheFile)) {
+                retrun;
+            }
+            $this->cache = json_decode(file_get_contents($this->cacheFile), true);
+            return;
+        }
         $this->cache = $cache;
     }
 
@@ -58,16 +65,17 @@ class Model {
         foreach ($dirFiles as $form) {
             $form = basename($form, '.php');
             $className = $bundle . 'Form\\' . $form;
-            $staticName = strtolower($this->toUnderscore($form));
+            $name_ = strtolower($this->toUnderscore($form));
             $forms[] = [
                 'class'     => $className,
                 'fullname'  => str_replace('\\', '__', $className),
                 'name'      => $form,
-                'layout'    => $this->root . '/layouts/' . str_replace('\\', '/', $bundle) . 'forms/' . $staticName . '.html',
-                'partial'   => $this->root . '/partials/' . str_replace('\\', '/', $bundle) . 'forms/' . $staticName . '.hbs',
-                'app'       => ($bundle == '') 
-                                ? $this->root . '/../app/forms/' . $form . '.yml'
-                                : $this->root . '/../bundles/' . str_replace('\\', '/', $bundle) . 'app/forms/' . $staticName . '.yml'
+                'name_'     => $name_,
+                'layout'    => $this->root . '/layouts/' . str_replace('\\', '/', $bundle) . 'forms/' . $name_ . '.html',
+                'partial'   => $this->root . '/partials/' . str_replace('\\', '/', $bundle) . 'forms/' . $name_ . '.hbs',
+                'app'       => ($bundle == '')
+                                ? $this->root . '/../app/forms/' . $name_ . '.yml'
+                                : $this->root . '/../bundles/' . str_replace('\\', '/', $bundle) . 'app/forms/' . $name_ . '.yml'
             ];
         }
     }
@@ -87,7 +95,7 @@ class Model {
         foreach ($forms as $form) {
             if (!file_exists($form['layout'])) {
                 $data = file_get_contents($this->root . '/../vendor/opine/build/static/form.html');
-                $data = str_replace(['{{$form}}'], [$form], $data);
+                $data = str_replace('{{$form}}', $form['name_'], $data);
                 file_put_contents($form['layout'], $data);
             }
             if (!file_exists($form['partial'])) {
@@ -119,7 +127,7 @@ class Model {
             }
             if (!file_exists($form['app'])) {
                 $data = file_get_contents($this->root . '/../vendor/opine/build/static/app-form.yml');
-                $data = str_replace(['{{$form}}', '{{$url}}'], [$form, ''], $data);
+                $data = str_replace(['{{$form}}', '{{$url}}'], [$form['name_'], ''], $data);
                 file_put_contents($form['app'], $data);
             }
         }

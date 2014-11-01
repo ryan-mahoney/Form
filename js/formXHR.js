@@ -4,12 +4,7 @@ $(document).ready(function () {
     $('form[data-xhr="true"]').ajaxForm({
         type: 'post',
         dataType: 'json',
-        beforeSerialize: function(form, options) { 
-            if (typeof CKEDITOR !== "undefined") {
-                for(var instanceName in CKEDITOR.instances) {
-                    CKEDITOR.instances[instanceName].updateElement();
-                }
-            }
+        beforeSerialize: function(form, options) {
             formUI.errorClear(form);
             formUI.loading(form);
         },

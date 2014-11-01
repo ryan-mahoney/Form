@@ -92,7 +92,7 @@ class Controller {
         $this->view->html(
             $this->service->markerToClass('Form__' . $form),
             'app/forms/' . strtolower($form) . '.yml',
-            'public/layouts/forms/' . strtolower($form) . '.html',
+            'forms/' . strtolower($form) . '.html',
             $dbURI
         );
     }
