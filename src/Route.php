@@ -32,21 +32,30 @@ class Route {
 	}
 
 	public function paths () {
+        //api routes
         $this->route->get('/api/form/{form}', 'formController@json');
         $this->route->get('/api/form/{form}/{id}', 'formController@json');
         $this->route->get('/{bundle}/api/form/{form}', 'formController@jsonBundle');
         $this->route->get('/{bundle}/api/form/{form}/{id}', 'formController@jsonBundle');
+        $this->route->post('/api/form/{form}', 'formController@update');
+        $this->route->post('/api/form/{form}/{dbURI}', 'formController@update');
+        $this->route->post('/{bundle}/api/form/{form}', 'formController@bundleUpdate');
+        $this->route->post('/{bundle}/api/form/{form}/{dbURI}', 'formController@bundleUpdate');
+        //$this->route->delete('/api/form/{form}/{dbURI}', 'formController@delete');
+        //$this->route->delete('/{bundle}/api/form/{form}/{dbURI}', 'formController@bundleDelete');
+
+        //front end routes
         $this->route->get('/form/{form}', 'formController@html');
         $this->route->get('/form/{form}.html', 'formController@html');
         $this->route->get('/form/{form}/{dbURI}', 'formController@html');
+        $this->route->get('/Form/{form}', 'formController@html');
+        $this->route->get('/Form/{form}.html', 'formController@html');
+        $this->route->get('/Form/{form}/{dbURI}', 'formController@html');
         $this->route->get('/{bundle}/form/{form}', 'formController@bundleHtml');
         $this->route->get('/{bundle}/form/{form}.html', 'formController@bundleHtml');
         $this->route->get('/{bundle}/form/{form}/{dbURI}', 'formController@bundleHtml');
-        $this->route->post('/form/{form}', 'formController@update');
-        $this->route->post('/form/{form}/{dbURI}', 'formController@update');
-        $this->route->post('/{bundle}/form/{form}', 'formController@bundleUpdate');
-        $this->route->post('/{bundle}/form/{form}/{dbURI}', 'formController@bundleUpdate');
-        $this->route->delete('/form/{form}/{dbURI}', 'formController@delete');
-        $this->route->delete('/{bundle}/form/{form}/{dbURI}', 'formController@bundleDelete');
+        $this->route->get('/{bundle}/Form/{form}', 'formController@bundleHtml');
+        $this->route->get('/{bundle}/Form/{form}.html', 'formController@bundleHtml');
+        $this->route->get('/{bundle}/Form/{form}/{dbURI}', 'formController@bundleHtml');
     }
 }
