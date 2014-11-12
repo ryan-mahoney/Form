@@ -40,7 +40,6 @@ class View {
         	app($app)->
             layout($layout)->
             args(str_replace('\\', '__', get_class($formObject)), $args)->
-            template()->
             write();
     }
 }
