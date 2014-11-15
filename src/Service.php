@@ -192,6 +192,7 @@ class Service {
         $out['id_spare'] = (string)new MongoId();
         $out['id'] = '<input type="hidden" name="' . $formObject->marker . '[id]" value="' . (string)$formObject->id . '" />';
         $out['form-token'] = '<input type="hidden" name="' . $formObject->marker . '[form-token]" value="' . $formObject->token . '" />';
+        $out['form-marker'] = $formObject->marker;
         return json_encode($out, JSON_PRETTY_PRINT);
     }
 

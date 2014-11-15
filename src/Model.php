@@ -34,6 +34,7 @@ class Model {
 
     public function __construct ($root, $service, $bundleModel) {
         $this->root = $root;
+        $this->service = $service;
         $this->cacheFile = $root . '/../cache/forms.json';
         $this->bundleModel = $bundleModel;
     }
@@ -89,48 +90,9 @@ class Model {
         $this->directoryScan($this->root . '/../forms/*.php', $forms);
         $bundles = $this->bundleModel->bundles();
         foreach ($bundles as $bundle) {
-            $this->directoryScan($bundle['root'] . '/../collections/*.php', $forms, $bundle['name']);
+            $this->directoryScan($bundle['root'] . '/../forms/*.php', $forms, $bundle['name']);
         }
         $this->cacheWrite($forms);
-        foreach ($forms as $form) {
-            if (!file_exists($form['layout'])) {
-                $data = file_get_contents($this->root . '/../vendor/opine/build/static/form.html');
-                $data = str_replace('{{$form}}', $form['name_'], $data);
-                file_put_contents($form['layout'], $data);
-            }
-            if (!file_exists($form['partial'])) {
-                $data = file_get_contents($this->root . '/../vendor/opine/build/static/form.hbs');
-                $className = $form['class'];
-                $formObject = $this->service->factory(new $className);
-                $buffer = '';
-                $buffer .= '
-<form class="ui form segment" data-xhr="true" method="post">' . "\n";
-
-                foreach ($formObject->fields as $field) {
-                    $buffer .= '
-    <div class="field">
-        <label>' . ucwords(str_replace('_', ' ', $field['name'])) . '</label>
-        <div class="ui left labeled input">
-            {{{' . $field['name'] . '}}}
-            <div class="ui corner label">
-                <i class="icon asterisk"></i>
-            </div>
-        </div>
-    </div>' . "\n";
-                }
-                $buffer .= '
-    {{{id}}}
-    <input type="submit" class="ui blue submit button" value="Submit" />
-</form>';
-                $data = str_replace(['{{$form}}', '{{$generated}}'], [$form, $buffer], $data);
-                file_put_contents($form['partial'], $data);
-            }
-            if (!file_exists($form['app'])) {
-                $data = file_get_contents($this->root . '/../vendor/opine/build/static/app-form.yml');
-                $data = str_replace(['{{$form}}', '{{$url}}'], [$form['name_'], ''], $data);
-                file_put_contents($form['app'], $data);
-            }
-        }
         return json_encode($forms, JSON_PRETTY_PRINT);
     }
 

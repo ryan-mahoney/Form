@@ -41,8 +41,6 @@ class Route {
         $this->route->post('/api/form/{form}/{dbURI}', 'formController@update');
         $this->route->post('/{bundle}/api/form/{form}', 'formController@bundleUpdate');
         $this->route->post('/{bundle}/api/form/{form}/{dbURI}', 'formController@bundleUpdate');
-        //$this->route->delete('/api/form/{form}/{dbURI}', 'formController@delete');
-        //$this->route->delete('/{bundle}/api/form/{form}/{dbURI}', 'formController@bundleDelete');
 
         //front end routes
         $this->route->get('/form/{form}', 'formController@html');

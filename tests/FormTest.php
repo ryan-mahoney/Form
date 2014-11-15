@@ -138,7 +138,7 @@ class FormTest extends PHPUnit_Framework_TestCase {
     }
 
     public function testFormSubmitFail () {
-        $this->post->populate('/', [
+        $this->post->populate([
             'Form__Contact' => $this->contactPost
         ]);
         $response = json_decode($this->form->upsert(new \Form\Contact, $this->contactId), true);
@@ -147,7 +147,7 @@ class FormTest extends PHPUnit_Framework_TestCase {
 
     public function testFormSubmitSuccess () {
         $this->topic->subscribe('Form__Contact-save', 'test@fakeSubmit');
-        $this->post->populate('/', [
+        $this->post->populate([
             'Form__Contact' => array_merge(
                 $this->contactPost, 
                 ['form-token' => $this->form->tokenHashGet(new \Form\Contact())]
@@ -158,7 +158,7 @@ class FormTest extends PHPUnit_Framework_TestCase {
     }
 
     public function testFormBundleSubmitFail () {
-        $this->post->populate('/', [
+        $this->post->populate([
             'Sample__Form__Contact' => $this->contactPost
         ]);
         $response = json_decode($this->form->upsert(new \Sample\Form\Contact(), $this->contactId), true);
@@ -167,7 +167,7 @@ class FormTest extends PHPUnit_Framework_TestCase {
 
     public function testFormBundleSubmitSuccess () {
         $this->topic->subscribe('Sample__Form__Contact-save', 'test@fakeSubmit');
-        $this->post->populate('/', [
+        $this->post->populate([
             'Sample__Form__Contact' => array_merge(
                 $this->contactPost,
                 ['form-token' => $this->form->tokenHashGet(new \Sample\Form\Contact)]
@@ -178,7 +178,7 @@ class FormTest extends PHPUnit_Framework_TestCase {
     }
 
     public function testManagerSubmitFail () {
-        $this->post->populate('/', [
+        $this->post->populate([
             'Manager__Form__Blogs' => [
                 'title' => 'Test',
                 'form-token' => $this->form->tokenHashGet(new \Manager\Form\Blogs())
@@ -190,7 +190,7 @@ class FormTest extends PHPUnit_Framework_TestCase {
 
     public function testManagerSubmitSuccess () {
         $this->topic->subscribe('Manager__Form__Blogs-save', 'test@fakeSubmit');
-        $this->post->populate('/', [
+        $this->post->populate([
             'Manager__Form__Blogs' => [
                 'title' => 'Test',
                 'status' => 'draft',
@@ -203,7 +203,7 @@ class FormTest extends PHPUnit_Framework_TestCase {
     }
 
     public function testBundleManagerSubmitFail () {
-        $this->post->populate('/', [
+        $this->post->populate([
             'Sample__Manager__Blogs' => [
                 'title' => 'Test',
                 'form-token' => $this->form->tokenHashGet(new \Sample\Manager\Blogs())
@@ -215,7 +215,7 @@ class FormTest extends PHPUnit_Framework_TestCase {
 
     public function testBundleManagerSubmitSuccess () {
         $this->topic->subscribe('Sample__Manager__Blogs-save', 'test@fakeSubmit');
-        $this->post->populate('/', [
+        $this->post->populate([
             'Sample__Manager__Blogs' => [
                 'title' => 'Test',
                 'status' => 'draft',
@@ -318,7 +318,7 @@ exit;
             $post->statusSaved();
         });
         $this->topic->subscribe('Form__Contact-save', 'fake-submit', ['post']);
-        $this->post->populate('/', [
+        $this->post->populate([
             'Form__Contact' => array_merge(
                 $this->contactPost,
                 ['form-token' => $this->form->tokenHashGet(new \Form\Contact)]
@@ -333,7 +333,7 @@ exit;
             $post->statusSaved();
         });
         $this->topic->subscribe('Form__Contact-save', 'fake-submit', ['post']);
-        $this->post->populate('/', [
+        $this->post->populate([
             'Form__Contact' => array_merge(
                 $this->contactPost
             )
