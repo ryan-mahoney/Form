@@ -10,10 +10,10 @@
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -99,6 +99,10 @@ class Service {
                 $form->redirect = $data;
                 break;
 
+            case 'refresh':
+                $form->after = 'refresh';
+                break;
+
             default:
                 throw new Exception('Unknown form "after" mode set');
         }
@@ -131,7 +135,7 @@ class Service {
                 $collection = $this->collection->factory(new $collection());
                 $formObject->id = $collection->collection . ':' . new MongoId();
             } else {
-                throw new Exception('Can not generate dbURI, unknown storage for form');
+                $formObject->id = '';
             }
         } else {
             $formObject->id = $dbURI;
@@ -224,7 +228,7 @@ class Service {
         $formPost = $this->post->{$formObject->marker};
         if (!$this->tokenHashMatch((array)$formPost, $formObject)) {
             $passed = false;
-            $this->post->errorFieldSet($formObject->marker, 'Invalid form submission.');        
+            $this->post->errorFieldSet($formObject->marker, 'Invalid form submission.');
         }
         foreach ($formObject->fields as $field) {
             if (!isset($field['label']) || empty($field['label']) == '') {
@@ -362,7 +366,7 @@ class Service {
             $this->topic->publish($topic, $context);
             return $this->responseSuccess($formObject);
         } else {
-            return $this->responseError();    
+            return $this->responseError();
         }
     }
 
@@ -381,7 +385,7 @@ class Service {
         if (!$this->tokenHashMatch(['form-token' => $token], $formObject)) {
             $passed = false;
             $this->post->errorFieldSet($formObject->marker, 'Invalid form submission.');
-            return $this->responseError();      
+            return $this->responseError();
         }
         $context = [
             'dbURI' => $id,
@@ -411,7 +415,7 @@ class Service {
             $this->topic->publish($topic, $context);
             return $this->responseSuccess($formObject);
         } else {
-            return $this->responseError();    
+            return $this->responseError();
         }
     }
 

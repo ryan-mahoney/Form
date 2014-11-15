@@ -72,7 +72,7 @@ class Controller {
             $id = $_GET['id'];
         }
         $className = '\\' . $bundle . '\Form\\' . $form;
-        echo $this->jsonDecorate($this->service->json($this->service->factory(new $className, $id), $id));        
+        echo $this->jsonDecorate($this->service->json($this->service->factory(new $className, $id), $id));
     }
 
     private function jsonDecorate ($json) {

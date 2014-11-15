@@ -31,6 +31,10 @@ $(document).ready(function () {
                         window[response['function']](form, submittedData, response);
                         break;
 
+                    case 'refresh':
+                        window.location.reload();
+                        break;
+
                     case 'another':
                         break;
                 }
