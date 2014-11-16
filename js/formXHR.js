@@ -21,6 +21,7 @@ $(document).ready(function () {
                 switch (response['after']) {
                     case 'redirect':
                         window.location = response['redirect'];
+                        window.location.reload();
                         break;
 
                     case 'notice':
