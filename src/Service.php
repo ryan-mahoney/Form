@@ -23,10 +23,13 @@
  * THE SOFTWARE.
  */
 namespace Opine\Form;
+
 use ArrayObject;
 use MongoId;
 use ReflectionClass;
 use Exception;
+use Opine\Interfaces\Topic as TopicInterface;
+use Opine\Interfaces\DB as DBInterface;
 
 class Service {
     private $root;
@@ -39,7 +42,7 @@ class Service {
     private $showTopics = false;
     private $showMarker = false;
 
-    public function __construct ($root, $field, $post, $db, $collection, $topic) {
+    public function __construct ($root, $field, $post, DBInterface $db, $collection, TopicInterface $topic) {
         $this->root = $root;
         $this->field = $field;
         $this->post = $post;

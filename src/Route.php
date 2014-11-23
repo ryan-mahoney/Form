@@ -24,10 +24,12 @@
  */
 namespace Opine\Form;
 
+use Opine\Interfaces\Route as RouteInterface;
+
 class Route {
 	private $route;
 
-	public function __construct ($route) {
+	public function __construct (RouteInterface $route) {
 		$this->route = $route;
 	}
 
