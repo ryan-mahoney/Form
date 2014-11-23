@@ -122,7 +122,7 @@ class Service {
         }
         $formObject->document = new ArrayObject();
         if (!empty($dbURI)) {
-            $document = $this->db->documentStage($dbURI)->current();
+            $document = $this->db->document($dbURI)->current();
             if (isset($document['_id'])) {
                 $formObject->document = new ArrayObject($document);
             }

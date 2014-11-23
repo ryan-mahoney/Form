@@ -1,6 +1,9 @@
 <?php
 namespace Opine;
+
 use PHPUnit_Framework_TestCase;
+use Opine\Config\Service as Config;
+use Opine\Container\Service as Container;
 
 class FormTest extends PHPUnit_Framework_TestCase {
     private $db;
@@ -19,18 +22,19 @@ class FormTest extends PHPUnit_Framework_TestCase {
     ];
 
     public function setup () {
-        date_default_timezone_set('UTC');
         $root = __DIR__ . '/../public';
-        $container = new Container($root, $root . '/../container.yml');
-        $this->db = $container->db;
-        $this->formRoute = $container->formRoute;
-        $this->formController = $container->formController;
-        $this->formModel = $container->formModel;
-        $this->formView = $container->formView;
-        $this->form = $container->form;
-        $this->post = $container->post;
-        $this->topic = $container->topic;
-        $this->route = $container->route;
+        $config = new Config($root);
+        $config->cacheSet();
+        $container = new Container($root, $config, $root . '/../container.yml');
+        $this->db = $container->get('db');
+        $this->formRoute = $container->get('formRoute');
+        $this->formController = $container->get('formController');
+        $this->formModel = $container->get('formModel');
+        $this->formView = $container->get('formView');
+        $this->form = $container->get('form');
+        $this->post = $container->get('post');
+        $this->topic = $container->get('topic');
+        $this->route = $container->get('route');
         $this->route->testMode();
         $this->ensureDocuments();
         $this->post->clear();
@@ -38,10 +42,10 @@ class FormTest extends PHPUnit_Framework_TestCase {
     }
 
     private function ensureDocuments () {
-        $this->db->documentStage($this->contactId, [
+        $this->db->document($this->contactId, [
             'first_name' => 'Test'
         ])->upsert();
-        $this->db->documentStage($this->blogId, [
+        $this->db->document($this->blogId, [
             'title' => 'Test'
         ])->upsert();
     }
