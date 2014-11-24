@@ -349,25 +349,25 @@ class Service {
         $this->sanitize($formObject);
         $topic = $formObject->marker . '-save';
         $this->showTopic($topic);
-        $this->topic->publish($topic, $context);
-        $this->topic->publish('Form-save', $context);
+        $this->topic->publish($topic, new ArrayObject($context));
+        $this->topic->publish('Form-save', new ArrayObject($context));
         if (isset($formObject->bundle) && !empty($formObject->bundle)) {
-            $this->topic->publish($formObject->bundle . '-Form-save', $context);
+            $this->topic->publish($formObject->bundle . '-Form-save', new ArrayObject($context));
         }
         if (isset($formObject->topicSave) && !empty($formObject->topicSave)) {
-            $this->topic->publish($formObject->topicSave, $context);
+            $this->topic->publish($formObject->topicSave, new ArrayObject($context));
         }
         if ($this->post->statusCheck() == 'saved') {
             $topic = $formObject->marker . '-saved';
-            $this->topic->publish('Form-saved', $context);
+            $this->topic->publish('Form-saved', new ArrayObject($context));
             if (isset($formObject->bundle) && !empty($formObject->bundle)) {
-                $this->topic->publish($formObject->bundle . '-Form-saved', $context);
+                $this->topic->publish($formObject->bundle . '-Form-saved', new ArrayObject($context));
             }
             if (isset($formObject->topicSaved) && !empty($formObject->topicSaved)) {
-                $this->topic->publish($formObject->topicSaved, $context);
+                $this->topic->publish($formObject->topicSaved, new ArrayObject($context));
             }
             $this->showTopic($topic);
-            $this->topic->publish($topic, $context);
+            $this->topic->publish($topic, new ArrayObject($context));
             return $this->responseSuccess($formObject);
         } else {
             return $this->responseError();
@@ -398,25 +398,25 @@ class Service {
         ];
         $topic = $formObject->marker . '-delete';
         $this->showTopic($topic);
-        $this->topic->publish($topic, $context);
-        $this->topic->publish('Form-delete', $context);
+        $this->topic->publish($topic, new ArrayObject($context));
+        $this->topic->publish('Form-delete', new ArrayObject($context));
         if (isset($formObject->bundle) && !empty($formObject->bundle)) {
-            $this->topic->publish($formObject->bundle . '-Form-delete', $context);
+            $this->topic->publish($formObject->bundle . '-Form-delete', new ArrayObject($context));
         }
         if (isset($formObject->topicDelete) && !empty($formObject->topicDelete)) {
-            $this->topic->publish($formObject->topicDelete, $context);
+            $this->topic->publish($formObject->topicDelete, new ArrayObject($context));
         }
         if ($this->post->statusCheck() == 'deleted') {
             $topic = $formObject->marker . '-deleted';
-            $this->topic->publish('Form-deleted', $context);
+            $this->topic->publish('Form-deleted', new ArrayObject($context));
             if (isset($formObject->bundle) && !empty($formObject->bundle)) {
-                $this->topic->publish($formObject->bundle . '-Form-deleted', $context);
+                $this->topic->publish($formObject->bundle . '-Form-deleted', new ArrayObject($context));
             }
             if (isset($formObject->topicDeleted) && !empty($formObject->topicDeleted)) {
-                $this->topic->publish($formObject->topicDeleted, $context);
+                $this->topic->publish($formObject->topicDeleted, new ArrayObject($context));
             }
             $this->showTopic($topic);
-            $this->topic->publish($topic, $context);
+            $this->topic->publish($topic, new ArrayObject($context));
             return $this->responseSuccess($formObject);
         } else {
             return $this->responseError();
