@@ -90,6 +90,9 @@ class Model {
         $this->directoryScan($this->root . '/../forms/*.php', $forms);
         $bundles = $this->bundleModel->bundles();
         foreach ($bundles as $bundle) {
+            if (!isset($bundle['root'])) {
+                continue;
+            }
             $this->directoryScan($bundle['root'] . '/../forms/*.php', $forms, $bundle['name']);
         }
         $this->cacheWrite($forms);
