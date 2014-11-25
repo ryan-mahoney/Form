@@ -75,8 +75,8 @@ class Model {
                 'layout'    => $this->root . '/layouts/' . str_replace('\\', '/', $bundle) . 'forms/' . $name_ . '.html',
                 'partial'   => $this->root . '/partials/' . str_replace('\\', '/', $bundle) . 'forms/' . $name_ . '.hbs',
                 'app'       => ($bundle == '')
-                                ? $this->root . '/../app/forms/' . $name_ . '.yml'
-                                : $this->root . '/../app/' . str_replace('\\', '/', $bundle) . '/forms/' . $name_ . '.yml'
+                                ? $this->root . '/../config/layouts/forms/' . $name_ . '.yml'
+                                : $this->root . '/../config/layouts/' . str_replace('\\', '/', $bundle) . '/forms/' . $name_ . '.yml'
             ];
         }
     }
@@ -87,13 +87,13 @@ class Model {
 
     public function build () {
         $forms = [];
-        $this->directoryScan($this->root . '/../forms/*.php', $forms);
+        $this->directoryScan($this->root . '/../config/forms/*.php', $forms);
         $bundles = $this->bundleModel->bundles();
         foreach ($bundles as $bundle) {
             if (!isset($bundle['root'])) {
                 continue;
             }
-            $this->directoryScan($bundle['root'] . '/../forms/*.php', $forms, $bundle['name']);
+            $this->directoryScan($bundle['root'] . '/../config/forms/*.php', $forms, $bundle['name']);
         }
         $this->cacheWrite($forms);
         return json_encode($forms, JSON_PRETTY_PRINT);
@@ -105,7 +105,7 @@ class Model {
         }
         $manifest = (array)json_decode(file_get_contents('https://raw.github.com/opine/form/master/available/manifest.json'), true);
         $upgraded = 0;
-        foreach (glob($root . '/../forms/*.php') as $filename) {
+        foreach (glob($root . '/../config/forms/*.php') as $filename) {
             $lines = file($filename);
             $version = false;
             $mode = false;
