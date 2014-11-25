@@ -35,7 +35,7 @@ class Model {
     public function __construct ($root, $service, $bundleModel) {
         $this->root = $root;
         $this->service = $service;
-        $this->cacheFile = $root . '/../cache/forms.json';
+        $this->cacheFile = $root . '/../var/cache/forms.json';
         $this->bundleModel = $bundleModel;
     }
 

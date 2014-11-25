@@ -6,6 +6,6 @@ require_once __DIR__ . '/TestService.php';
 $root = __DIR__ . '/../public';
 $config = new \Opine\Config\Service($root);
 $config->cacheSet();
-$container = new \Opine\Service\Container($root, $config, $root . '/../container.yml');
+$container = new \Opine\Service\Container($root, $config, $root . '/../config/container.yml');
 $formRoute = $container->get('formRoute');
 $formRoute->paths();

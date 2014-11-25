@@ -35,8 +35,8 @@
             "Opine\\Form\\": "src/"
         },
         "classmap": [
-            "forms",
-            "managers",
+            "config/forms",
+            "config/managers",
             "bundles/Sample/forms",
             "bundles/Sample/managers"
         ]
