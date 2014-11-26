@@ -16,7 +16,8 @@
         }
     ],
     "require": {
-        "php": ">=5.4.0"
+        "php": ">=5.4.0",
+        "opine/interfaces": "dev-master"
     },
     "require-dev": {
         "phpunit/phpunit": "3.7.32",
@@ -28,7 +29,7 @@
         "opine/db": "dev-master",
         "opine/route": "dev-master",
         "opine/bundle": "dev-master",
-        "opine/cache": "dev-master"
+        "opine/cache": "dev-master",
     },
     "autoload": {
         "psr-4": {

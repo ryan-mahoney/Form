@@ -24,10 +24,12 @@
  */
 namespace Opine\Form;
 
+use Opine\Interfaces\Layout as LayoutInterface;
+
 class View {
 	private $layout;
 
-	public function __construct ($layout) {
+	public function __construct (LayoutInterface $layout) {
 		$this->layout = $layout;
 	}
 
@@ -37,8 +39,8 @@ class View {
             $args['id'] = $id;
         }
         $this->layout->
-        	app($app)->
-            layout($layout)->
+        	config($app)->
+            container($layout)->
             args(str_replace('\\', '__', get_class($formObject)), $args)->
             write();
     }
