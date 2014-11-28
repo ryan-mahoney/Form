@@ -3,6 +3,7 @@ if ($('form[data-xhr="true"]').length) {
     require.ensure([], function(require) {
         var $ = require('jquery');
         require('semantic');
+        require('jquery-form');
         require('jquery.form.semantic.XHR.js');
     });
 } else {
