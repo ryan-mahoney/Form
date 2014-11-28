@@ -72,7 +72,6 @@
                         switch (response['after']) {
                             case 'redirect':
                                 window.location = response['redirect'];
-                                window.location.reload();
                                 break;
 
                             case 'notice':
@@ -84,10 +83,10 @@
                                 break;
 
                             case 'refresh':
+                                if ("redirect" in response) {
+                                    window.location = response['redirect'];
+                                }
                                 window.location.reload();
-                                break;
-
-                            case 'another':
                                 break;
                         }
                     } else {
