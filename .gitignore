@@ -1,4 +1,4 @@
-vendor
-composer.lock
-report
-build
+/vendor
+/composer.lock
+/report
+/bower_components
