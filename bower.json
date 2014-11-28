@@ -1,6 +1,6 @@
 {
   "name": "opine-form",
-  "version": "1.5.0",
+  "version": "1.5.1",
   "homepage": "https://github.com/Opine-Org/Form",
   "license": "MIT",
   "main": [
@@ -8,6 +8,7 @@
   ],
   "dependencies": {
     "semantic": "1.0.0",
-    "jquery": ">=2.1.1"
+    "jquery": ">=2.1.1",
+    "jquery-form": "malsup/form#3.51"
   }
 }

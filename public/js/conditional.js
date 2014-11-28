@@ -4,7 +4,7 @@ if ($('form[data-xhr="true"]').length) {
         var $ = require('jquery');
         require('semantic');
         require('jquery-form');
-        require('jquery.form.semantic.XHR.js');
+        require('./jquery.form.semantic.XHR.js');
     });
 } else {
     console.log("Skipping Loading Opine Form");
