@@ -7,7 +7,7 @@
     "public/js/conditional.js"
   ],
   "dependencies": {
-    "semantic": "1.0.0",
+    "semantic": "1.1.2",
     "jquery": ">=2.1.1",
     "jquery-form": "malsup/form#3.51"
   }
