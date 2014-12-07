@@ -41,7 +41,7 @@ class View {
         $this->layout->
         	config($app)->
             container($layout)->
-            args(str_replace('\\', '__', get_class($formObject)), $args)->
+            args($formObject->name, $args)->
             write();
     }
 }

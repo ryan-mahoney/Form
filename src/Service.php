@@ -28,6 +28,7 @@ use ArrayObject;
 use MongoId;
 use ReflectionClass;
 use Exception;
+use stdClass;
 use Opine\Interfaces\Topic as TopicInterface;
 use Opine\Interfaces\DB as DBInterface;
 
@@ -37,15 +38,15 @@ class Service {
     private $post;
     private $db;
     private $formStorage;
+    private $formModel;
     private $topic;
     private $collection;
-    private $showTopics = false;
-    private $showMarker = false;
 
-    public function __construct ($root, $field, $post, DBInterface $db, $collection, TopicInterface $topic) {
+    public function __construct ($root, $formModel, $field, $post, DBInterface $db, $collection, TopicInterface $topic) {
         $this->root = $root;
         $this->field = $field;
         $this->post = $post;
+        $this->formModel = $formModel;
         $this->db = $db;
         $this->formStorage = [];
         $this->topic = $topic;
@@ -64,14 +65,6 @@ class Service {
             return false;
         }
         return true;
-    }
-
-    public function showTopics () {
-        $this->showTopics = true;
-    }
-
-    public function showMarker () {
-        $this->showMarker = true;
     }
 
     public function stored ($form) {
@@ -111,18 +104,19 @@ class Service {
         }
     }
 
-    public function factory ($formObject, $dbURI=false) {
-        $formObject->field = $this->field;
-        $formObject->fields = $this->parseFieldMethods($formObject);
-        $formObject->db = $this->db;
-        $formObject->marker = str_replace('\\', '__', get_class($formObject));
-        $tmp = explode('__', $formObject->marker);
-        $firstPiece = array_shift($tmp);
-        $formObject->bundle = (!in_array($firstPiece, ['Form', 'Manager'])) ? $firstPiece : '';
-        $formObject->token = $this->tokenHashGet($formObject);
-        if ($this->showMarker === true) {
-            echo 'Form marker: ', $formObject->marker, "\n";
+    public function factory ($formName, $dbURI=false) {
+        $formObject = new stdClass();
+        $form = $this->formModel->cacheGetForm($formName);
+        if ($form === false) {
+            throw new Exception('Can not get: ' . $formName . ' from cache');
         }
+        foreach ($form as $key => $value) {
+            $formObject->{$key} = $value;
+        }
+        $formObject->field = $this->field;
+        $formObject->db = $this->db;
+        $formObject->marker = $formName;
+        $formObject->token = $this->tokenHashGet($formObject);
         $formObject->document = new ArrayObject();
         if (!empty($dbURI)) {
             $document = $this->db->document($dbURI)->current();
@@ -145,20 +139,6 @@ class Service {
         }
         $this->formStorage[$formObject->marker] = $formObject;
         return $formObject;
-    }
-
-    public function parseFieldMethods ($object) {
-        $reflector = new ReflectionClass($object);
-        $methods = $reflector->getMethods();
-        $fields = [];
-        foreach ($methods as $method) {
-            if (preg_match('/Field$/', (string)$method->name) == 0) {
-                continue;
-            }
-            $data = new ArrayObject($method->invoke($object));
-            $fields[$data['name']] = $data;
-        }
-        return $fields;
     }
 
     public function json ($formObject) {
@@ -324,13 +304,13 @@ class Service {
         return 'Form';
     }
 
-    public function viewJson ($formObject, $id=false) {
-        $formObject = $this->form->factory($formObject, $id);
+    public function viewJson ($form, $id=false) {
+        $formObject = $this->form->factory($form, $id);
         echo $this->form->json($formObject, $id);
     }
 
-    public function upsert ($formObject, $id=false) {
-        $formObject = $this->factory($formObject, $id);
+    public function upsert ($form, $id=false) {
+        $formObject = $this->factory($form, $id);
         if ($id === false) {
             if (isset($this->post->{$formObject->marker}['id'])) {
                 $id = $this->post->{$formObject->marker}['id'];
@@ -348,7 +328,6 @@ class Service {
         }
         $this->sanitize($formObject);
         $topic = $formObject->marker . '-save';
-        $this->showTopic($topic);
         $this->topic->publish($topic, new ArrayObject($context));
         $this->topic->publish('Form-save', new ArrayObject($context));
         if (isset($formObject->bundle) && !empty($formObject->bundle)) {
@@ -366,7 +345,6 @@ class Service {
             if (isset($formObject->topicSaved) && !empty($formObject->topicSaved)) {
                 $this->topic->publish($formObject->topicSaved, new ArrayObject($context));
             }
-            $this->showTopic($topic);
             $this->topic->publish($topic, new ArrayObject($context));
             return $this->responseSuccess($formObject);
         } else {
@@ -374,15 +352,8 @@ class Service {
         }
     }
 
-    private function showTopic ($topic) {
-        if ($this->showTopics === false) {
-            return;
-        }
-        echo $topic, "\n";
-    }
-
-    public function delete ($formObject, $id, $token) {
-        $formObject = $this->factory($formObject, $id);
+    public function delete ($form, $id, $token) {
+        $formObject = $this->factory($form, $id);
         if ($id === false) {
             throw new Exception('ID not supplied in post.');
         }
@@ -397,7 +368,6 @@ class Service {
             'formObject' => $formObject
         ];
         $topic = $formObject->marker . '-delete';
-        $this->showTopic($topic);
         $this->topic->publish($topic, new ArrayObject($context));
         $this->topic->publish('Form-delete', new ArrayObject($context));
         if (isset($formObject->bundle) && !empty($formObject->bundle)) {
@@ -415,20 +385,10 @@ class Service {
             if (isset($formObject->topicDeleted) && !empty($formObject->topicDeleted)) {
                 $this->topic->publish($formObject->topicDeleted, new ArrayObject($context));
             }
-            $this->showTopic($topic);
             $this->topic->publish($topic, new ArrayObject($context));
             return $this->responseSuccess($formObject);
         } else {
             return $this->responseError();
         }
-    }
-
-    public function markerToClassName ($marker) {
-        return str_replace('__', '\\', $marker);
-    }
-
-    public function markerToClass ($marker) {
-        $class = str_replace('__', '\\', $marker);
-        return new $class();
     }
 }

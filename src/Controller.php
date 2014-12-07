@@ -36,11 +36,11 @@ class Controller {
 	}
 
     public function update ($form, $dbURI=false) {
-        echo $this->service->upsert($this->service->markerToClass('Form__' . $form), $dbURI);
+        echo $this->service->upsert($form, $dbURI);
     }
 
     public function bundleUpdate ($bundle, $form, $dbURI=false) {
-        echo $this->service->upsert($this->service->markerToClass($bundle . '__Form__' . $form), $dbURI);
+        echo $this->service->upsert($bundle . '__' . $form, $dbURI);
     }
 
     public function delete ($form, $dbURI) {
@@ -48,7 +48,7 @@ class Controller {
         if (isset($_GET['form-token'])) {
             $token = $_GET['form-token'];
         }
-        echo $this->service->delete($this->service->markerToClass('Form__' . $form), $dbURI, $token);
+        echo $this->service->delete($form, $dbURI, $token);
     }
 
     public function bundleDelete ($bundle, $form, $dbURI) {
@@ -56,23 +56,21 @@ class Controller {
         if (isset($_GET['form-token'])) {
             $token = $_GET['form-token'];
         }
-        echo $this->service->delete($this->service->markerToClass($bundle . '__Form__' . $form), $dbURI, $token);
+        echo $this->service->delete($bundle . '__' . $form, $dbURI, $token);
     }
 
     public function json ($form, $id=false) {
         if (isset($_GET['id']) && $id === false) {
             $id = $_GET['id'];
         }
-        $className = '\Form\\' . $form;
-        echo $this->jsonDecorate($this->service->json($this->service->factory(new $className, $id), $id));
+        echo $this->jsonDecorate($this->service->json($this->service->factory($form, $id), $id));
     }
 
     public function jsonBundle ($bundle, $form, $id=false) {
         if (isset($_GET['id']) && $id === false) {
             $id = $_GET['id'];
         }
-        $className = '\\' . $bundle . '\Form\\' . $form;
-        echo $this->jsonDecorate($this->service->json($this->service->factory(new $className, $id), $id));
+        echo $this->jsonDecorate($this->service->json($this->service->factory($bundle . '__' . $form, $id), $id));
     }
 
     private function jsonDecorate ($json) {
@@ -90,18 +88,18 @@ class Controller {
 
     public function html ($form, $dbURI=false) {
         $this->view->html(
-            $this->service->markerToClass('Form__' . $form),
-            'forms/' . strtolower($form) . '.yml',
-            'forms/' . strtolower($form) . '.html',
+            $this->service->factory($form),
+            'forms/' . $form,
+            'forms/' . $form,
             $dbURI
         );
     }
 
     public function bundleHtml ($bundle, $form, $dbURI=false) {
         $this->view->html(
-            $this->service->markerToClass($bundle . '__Form__' . $form),
-            [strtolower($bundle) . '/forms/' . strtolower($form) . '.yml', $bundle . '/forms/' . strtolower($form) . '.yml'],
-            [strtolower($bundle) . '/forms/' . strtolower($form) . '.html', $bundle . '/forms/' . strtolower($form) . '.html'],
+            $this->service->factory($bundle . '__' . $form),
+            [strtolower($bundle) . '/forms/' . $form . '.yml', $bundle . '/forms/' . $form . '.yml'],
+            [strtolower($bundle) . '/forms/' . $form . '.html', $bundle . '/forms/' . $form . '.html'],
             $dbURI
         );
     }

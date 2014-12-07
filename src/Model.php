@@ -24,17 +24,17 @@
  */
 namespace Opine\Form;
 
+use Symfony\Component\Yaml\Yaml;
+
 class Model {
+    private $cache;
     private $root;
-    private $service;
-    private $cacheService;
     private $bundleModel;
     private $cacheFile;
     private $cacheKey;
 
-    public function __construct ($root, $service, $bundleModel) {
+    public function __construct ($root, $bundleModel) {
         $this->root = $root;
-        $this->service = $service;
         $this->cacheFile = $root . '/../var/cache/forms.json';
         $this->bundleModel = $bundleModel;
     }
@@ -50,6 +50,13 @@ class Model {
         $this->cache = $cache;
     }
 
+    public function cacheGetForm ($slug) {
+        if (!isset($this->cache[$slug])) {
+            return false;
+        }
+        return $this->cache[$slug];
+    }
+
     private function cacheWrite ($cache) {
         file_put_contents($this->cacheFile, json_encode($cache, JSON_PRETTY_PRINT));
     }
@@ -59,26 +66,30 @@ class Model {
     }
 
     private function directoryScan ($path, &$forms, $bundle='') {
-        if ($bundle != '') {
-            $bundle .= '\\';
+        $separator = '';
+        $separator2 = '';
+        if (strlen($bundle) > 0) {
+            $separator = '/';
+            $separator2 = '__';
         }
         $dirFiles = glob($path);
         foreach ($dirFiles as $form) {
-            $form = basename($form, '.php');
-            $className = $bundle . 'Form\\' . $form;
-            $name_ = strtolower($this->toUnderscore($form));
-            $forms[] = [
-                'class'     => $className,
-                'fullname'  => str_replace('\\', '__', $className),
-                'name'      => $form,
-                'name_'     => $name_,
-                'layout'    => $this->root . '/layouts/' . str_replace('\\', '/', $bundle) . 'forms/' . $name_ . '.html',
-                'partial'   => $this->root . '/partials/' . str_replace('\\', '/', $bundle) . 'forms/' . $name_ . '.hbs',
+            $form = $this->yaml($form);
+            $form = $form['form'];
+            foreach ($form['fields'] as $key => &$value) {
+                $value['name'] = $key;
+            }
+            $forms[$form['slug'] . $separator2 . $bundle] = array_merge($form, [
+                'bundle'    => $bundle,
+                'name'      => $form['slug'],
+                'layout'    => $this->root . '/layouts/' . $bundle . $separator . 'forms/' . $form['slug'] . '.html',
+                'partial'   => $this->root . '/partials/' . $bundle . $separator . 'forms/' . $form['slug'] . '.hbs',
                 'app'       => ($bundle == '')
-                                ? $this->root . '/../config/layouts/forms/' . $name_ . '.yml'
-                                : $this->root . '/../config/layouts/' . str_replace('\\', '/', $bundle) . '/forms/' . $name_ . '.yml'
-            ];
+                                ? $this->root . '/../config/layouts/forms/' . $form['slug'] . '.yml'
+                                : $this->root . '/../config/layouts/' . $bundle . $separator . '/forms/' . $form['slug'] . '.yml'
+            ]);
         }
+        return true;
     }
 
     private function toUnderscore ($value) {
@@ -87,65 +98,22 @@ class Model {
 
     public function build () {
         $forms = [];
-        $this->directoryScan($this->root . '/../config/forms/*.php', $forms);
+        $this->directoryScan($this->root . '/../config/forms/*.yml', $forms);
         $bundles = $this->bundleModel->bundles();
         foreach ($bundles as $bundle) {
             if (!isset($bundle['root'])) {
                 continue;
             }
-            $this->directoryScan($bundle['root'] . '/../config/forms/*.php', $forms, $bundle['name']);
+            $this->directoryScan($bundle['root'] . '/../config/forms/*.yml', $forms, $bundle['name']);
         }
         $this->cacheWrite($forms);
         return json_encode($forms, JSON_PRETTY_PRINT);
     }
 
-    public function upgrade ($root=false) {
-        if ($root === false) {
-            $root = $this->root;
+    private function yaml ($file) {
+        if (function_exists('yaml_parse_file')) {
+            return yaml_parse_file($file);
         }
-        $manifest = (array)json_decode(file_get_contents('https://raw.github.com/opine/form/master/available/manifest.json'), true);
-        $upgraded = 0;
-        foreach (glob($root . '/../config/forms/*.php') as $filename) {
-            $lines = file($filename);
-            $version = false;
-            $mode = false;
-            $link = false;
-            foreach ($lines as $line) {
-                if (substr_count($line, ' * @') != 1) {
-                    continue;
-                }
-                if (substr_count($line, '* @mode') == 1) {
-                    $mode = trim(str_replace('* @mode', '', $line));
-                    continue;
-                }
-                if (substr_count($line, '* @version') == 1) {
-                    $version = floatval(trim(str_replace('* @version', '', $line)));
-                    continue;
-                }
-                if (substr_count($line, '* @link') == 1) {
-                    $link = trim(str_replace('* @link', '', $line));
-                    continue;
-                }
-            }
-            if ($mode === false || $version === false || $link === false) {
-                continue;
-            }
-            if ($version == '' || $link == '' || $mode == '') {
-                continue;
-            }
-            if ($mode != 'upgrade') {
-                continue;
-            }
-            if ($version == $manifest['forms'][basename($filename, '.php')]) {
-                continue;
-            }
-            $newVersion = floatval($manifest['forms'][basename($filename, '.php')]);
-            if ($newVersion > $version) {
-                file_put_contents($filename, file_get_contents($link));
-                echo 'Upgraded Form: ', basename($filename, '.php'), ' to version: ', $newVersion, "\n";
-                $upgraded++;
-            }
-        }
-        echo 'Upgraded ', $upgraded, ' forms.', "\n";
+        return Yaml::parse(file_get_contents($file));
     }
 }

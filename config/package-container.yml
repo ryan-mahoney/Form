@@ -4,13 +4,13 @@ services:
         arguments: ['@route']
     form:
         class:     'Opine\Form\Service'
-        arguments: ['%root%', '@field', '@post', '@db', '@collection', '@topic']
+        arguments: ['%root%', '@formModel', '@field', '@post', '@db', '@collection', '@topic']
     formController:
         class:     'Opine\Form\Controller'
         arguments: ['@formModel', '@formView', '@form']
     formModel:
         class:     'Opine\Form\Model'
-        arguments: ['%root%', '@form', '@bundleModel', '@cache']
+        arguments: ['%root%', '@bundleModel', '@cache']
     formView:
         class:     'Opine\Form\View'
         arguments: ['@layout']
