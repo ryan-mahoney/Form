@@ -31,6 +31,7 @@ use Exception;
 use stdClass;
 use Opine\Interfaces\Topic as TopicInterface;
 use Opine\Interfaces\DB as DBInterface;
+use Opine\Interfaces\Route as RouteInterface;
 
 class Service {
     private $root;
@@ -42,8 +43,9 @@ class Service {
     private $topic;
     private $collection;
 
-    public function __construct ($root, $formModel, $route, $post, DBInterface $db, $collection, TopicInterface $topic) {
+    public function __construct ($root, $formModel, RouteInterface $route, $post, DBInterface $db, $collection, TopicInterface $topic) {
         $this->root = $root;
+        $this->route = $route;
         $this->post = $post;
         $this->formModel = $formModel;
         $this->db = $db;
@@ -146,14 +148,12 @@ class Service {
             if (isset($formObject->document[$field['name']])) {
                 $field['data'] = $formObject->document[$field['name']];
                 if (isset($field['transformOut'])) {
-                    $function = $field['transformOut'];
-                    $field['data'] = $function($field['data'], $formObject);
+                    $field['data'] = $this->route->serviceMethod($field['transformOut'], $field['data'], $formObject);
                 }
             } else {
                 if (isset($field['default'])) {
-                    $default = $field['default'];
-                    if (is_callable($default)) {
-                        $field['data'] = $default($field);
+                    if (substr_count($field['default'], '@') == 1) {
+                        $field['data'] = $this->route->serviceMethod($field['default'], $field, $formObject);
                     } else {
                         $field['data'] = $default;
                     }
@@ -197,8 +197,7 @@ class Service {
             if (!isset($formPost[$field['name']])) {
                 continue;
             }
-            $function = $field['transformIn'];
-            $formPost[$field['name']] = $function($formPost[$field['name']], $formPost);
+            $formPost[$field['name']] = $this->route->serviceMethod($field['transformIn'], $field, $formObject, $formPost);
         }
     }
 
@@ -217,9 +216,8 @@ class Service {
                     $field['label'] = ucwords(str_replace('_', ' ', $field['name']));
                 }
             }
-            if (isset($field['required']) && is_callable($field['required'])) {
-                $required = $field['required'];
-                $field['required'] = $required($formPost[$field['name']], $formPost);
+            if (isset($field['required']) && substr_count($field['required'], '@') == 1) {
+                $field['required'] = $this->route->serviceMethod($field['required'], $field, $formObject, $formPost);
             }
             if (isset($field['required']) && $field['required'] == true) {
                 if (!self::fieldValidateRequired ($field, $formPost)) {
@@ -230,7 +228,7 @@ class Service {
             }
             if (isset($field['validate'])) {
                 $validate = $field['validate'];
-                $error = $validate($formPost[$field['name']], $formPost);
+                $error = $this->route->serviceMethod($field['validate'], $field, $formObject, $formPost);
                 if ($error !== true) {
                     $passed = false;
                     $this->post->errorFieldSet($formObject->slug, $field['label'] . ': ' . $error, $field['name']);
