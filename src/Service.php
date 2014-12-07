@@ -34,7 +34,7 @@ use Opine\Interfaces\DB as DBInterface;
 
 class Service {
     private $root;
-    private $field;
+    private $route;
     private $post;
     private $db;
     private $formStorage;
@@ -42,9 +42,8 @@ class Service {
     private $topic;
     private $collection;
 
-    public function __construct ($root, $formModel, $field, $post, DBInterface $db, $collection, TopicInterface $topic) {
+    public function __construct ($root, $formModel, $route, $post, DBInterface $db, $collection, TopicInterface $topic) {
         $this->root = $root;
-        $this->field = $field;
         $this->post = $post;
         $this->formModel = $formModel;
         $this->db = $db;
@@ -113,8 +112,6 @@ class Service {
         foreach ($form as $key => $value) {
             $formObject->{$key} = $value;
         }
-        $formObject->field = $this->field;
-        $formObject->db = $this->db;
         $formObject->token = $this->tokenHashGet($formObject);
         $formObject->document = new ArrayObject();
         if (!empty($dbURI)) {
@@ -162,7 +159,7 @@ class Service {
                     }
                 }
             }
-            $out[$field['name']] = $this->field->render($field['display'], $field, $formObject->document, $formObject->fields);
+            $out[$field['name']] = $this->route->serviceMethod($field['display'], $field, $formObject->document, $formObject);
         }
         if (isset($formObject->document['modified_date'])) {
             $out['modified_date'] = self::date($formObject->document['modified_date']);

@@ -6,21 +6,21 @@ form:
     fields:
         first_name:
             placeholder: "First Name"
-            display: "Field\InputText"
+            display: fieldInputText@render
             required: true
         last_name:
             placeholder: "Last Name"
-            display: Field\InputText
+            display: fieldInputText@render
             required: true
         phone:
             placeholder: Phone
-            display: Field\InputText
+            display: fieldInputText@render
             required: true
         email:
             placeholder: "Email Address"
-            display: Field\InputText
+            display: fieldInputText@render
             required: true
         message:
             placeholder: "Enter your message here"
-            display: Field\Textarea
+            display: fieldTextarea@render
             required: true
