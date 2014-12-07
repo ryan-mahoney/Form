@@ -120,7 +120,7 @@ class FormTest extends PHPUnit_Framework_TestCase {
     }
 
     public function testFormSubmitSuccess () {
-        $this->topic->subscribe('contact-save', 'test@fakeSubmit');
+        $this->topic->subscribe('FORM:SAVE:contact', 'test@fakeSubmit');
         $this->post->populate([
             'contact' => array_merge(
                 $this->contactPost,
@@ -155,7 +155,7 @@ class FormTest extends PHPUnit_Framework_TestCase {
     }
 
     public function testUpdateFromRouteSuccess () {
-        $this->topic->subscribe('contact-save', 'test@fakeSubmit');
+        $this->topic->subscribe('FORM:SAVE:contact', 'test@fakeSubmit');
         $this->post->populate([
             'contact' => array_merge(
                 $this->contactPost,

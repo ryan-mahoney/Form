@@ -78,6 +78,7 @@ class Model {
             $form = $form['form'];
             foreach ($form['fields'] as $key => &$value) {
                 $value['name'] = $key;
+                $value['marker'] = $form['slug'];
             }
             $forms[$form['slug'] . $separator2 . $bundle] = array_merge($form, [
                 'bundle'    => $bundle,

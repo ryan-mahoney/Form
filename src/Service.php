@@ -115,7 +115,6 @@ class Service {
         }
         $formObject->field = $this->field;
         $formObject->db = $this->db;
-        $formObject->marker = $formName;
         $formObject->token = $this->tokenHashGet($formObject);
         $formObject->document = new ArrayObject();
         if (!empty($dbURI)) {
@@ -137,7 +136,7 @@ class Service {
         } else {
             $formObject->id = $dbURI;
         }
-        $this->formStorage[$formObject->marker] = $formObject;
+        $this->formStorage[$formObject->slug] = $formObject;
         return $formObject;
     }
 
@@ -163,7 +162,6 @@ class Service {
                     }
                 }
             }
-            $field['marker'] = $formObject->marker;
             $out[$field['name']] = $this->field->render($field['display'], $field, $formObject->document, $formObject->fields);
         }
         if (isset($formObject->document['modified_date'])) {
@@ -173,9 +171,9 @@ class Service {
             $out['created_date'] = self::date($formObject->document['created_date']);
         }
         $out['id_spare'] = (string)new MongoId();
-        $out['id'] = '<input type="hidden" name="' . $formObject->marker . '[id]" value="' . (string)$formObject->id . '" />';
-        $out['form-token'] = '<input type="hidden" name="' . $formObject->marker . '[form-token]" value="' . $formObject->token . '" />';
-        $out['form-marker'] = $formObject->marker;
+        $out['id'] = '<input type="hidden" name="' . $formObject->slug . '[id]" value="' . (string)$formObject->id . '" />';
+        $out['form-token'] = '<input type="hidden" name="' . $formObject->slug . '[form-token]" value="' . $formObject->token . '" />';
+        $out['form-marker'] = $formObject->slug;
         return json_encode($out, JSON_PRETTY_PRINT);
     }
 
@@ -191,10 +189,10 @@ class Service {
     }
 
     public function sanitize ($formObject) {
-        if ($this->post->{$formObject->marker} === false) {
+        $formPost = $this->post->get($formObject->slug);
+        if ($formPost === false) {
             throw new Exception('form not in post');
         }
-        $formPost = $this->post->{$formObject->marker};
         foreach ($formObject->fields as $field) {
             if (!isset($field['transformIn'])) {
                 continue;
@@ -209,10 +207,10 @@ class Service {
 
     public function validate ($formObject) {
         $passed = true;
-        $formPost = $this->post->{$formObject->marker};
+        $formPost = $this->post->get($formObject->slug);
         if (!$this->tokenHashMatch((array)$formPost, $formObject)) {
             $passed = false;
-            $this->post->errorFieldSet($formObject->marker, 'Invalid form submission.');
+            $this->post->errorFieldSet($formObject->slug, 'Invalid form submission.');
         }
         foreach ($formObject->fields as $field) {
             if (!isset($field['label']) || empty($field['label']) == '') {
@@ -229,7 +227,7 @@ class Service {
             if (isset($field['required']) && $field['required'] == true) {
                 if (!self::fieldValidateRequired ($field, $formPost)) {
                     $passed = false;
-                    $this->post->errorFieldSet($formObject->marker, $field['label'] . ' must have a value.', $field['name']);
+                    $this->post->errorFieldSet($formObject->slug, $field['label'] . ' must have a value.', $field['name']);
                     continue;
                 }
             }
@@ -238,7 +236,7 @@ class Service {
                 $error = $validate($formPost[$field['name']], $formPost);
                 if ($error !== true) {
                     $passed = false;
-                    $this->post->errorFieldSet($formObject->marker, $field['label'] . ': ' . $error, $field['name']);
+                    $this->post->errorFieldSet($formObject->slug, $field['label'] . ': ' . $error, $field['name']);
                 }
             }
         }
@@ -312,40 +310,35 @@ class Service {
     public function upsert ($form, $id=false) {
         $formObject = $this->factory($form, $id);
         if ($id === false) {
-            if (isset($this->post->{$formObject->marker}['id'])) {
-                $id = $this->post->{$formObject->marker}['id'];
+            $formPost = $this->post->get($formObject->slug);
+            if (isset($formPost['id'])) {
+                $id = $formPost['id'];
             } else {
                 throw new Exception('ID not supplied in post.');
             }
         }
         $context = [
             'dbURI' => $id,
-            'formMarker' => $formObject->marker,
+            'formMarker' => $formObject->slug,
             'formObject' => $formObject
         ];
         if (!$this->validate($formObject)) {
             return $this->responseError();
         }
         $this->sanitize($formObject);
-        $topic = $formObject->marker . '-save';
+        $topic = 'FORM:SAVE';
+        $this->topic->publish($topic . ':' . $formObject->slug, new ArrayObject($context));
         $this->topic->publish($topic, new ArrayObject($context));
-        $this->topic->publish('Form-save', new ArrayObject($context));
-        if (isset($formObject->bundle) && !empty($formObject->bundle)) {
-            $this->topic->publish($formObject->bundle . '-Form-save', new ArrayObject($context));
-        }
         if (isset($formObject->topicSave) && !empty($formObject->topicSave)) {
             $this->topic->publish($formObject->topicSave, new ArrayObject($context));
         }
         if ($this->post->statusCheck() == 'saved') {
-            $topic = $formObject->marker . '-saved';
-            $this->topic->publish('Form-saved', new ArrayObject($context));
-            if (isset($formObject->bundle) && !empty($formObject->bundle)) {
-                $this->topic->publish($formObject->bundle . '-Form-saved', new ArrayObject($context));
-            }
+            $topic = 'FORM:SAVED';
+            $this->topic->publish($topic . ':' . $formObject->slug, new ArrayObject($context));
+            $this->topic->publish($topic, new ArrayObject($context));
             if (isset($formObject->topicSaved) && !empty($formObject->topicSaved)) {
                 $this->topic->publish($formObject->topicSaved, new ArrayObject($context));
             }
-            $this->topic->publish($topic, new ArrayObject($context));
             return $this->responseSuccess($formObject);
         } else {
             return $this->responseError();
@@ -359,33 +352,27 @@ class Service {
         }
         if (!$this->tokenHashMatch(['form-token' => $token], $formObject)) {
             $passed = false;
-            $this->post->errorFieldSet($formObject->marker, 'Invalid form submission.');
+            $this->post->errorFieldSet($formObject->slug, 'Invalid form submission.');
             return $this->responseError();
         }
         $context = [
             'dbURI' => $id,
-            'formMarker' => $formObject->marker,
+            'formMarker' => $formObject->slug,
             'formObject' => $formObject
         ];
-        $topic = $formObject->marker . '-delete';
+        $topic = 'FORM:DELETE';
+        $this->topic->publish($topic . ':' . $formObject->slug, new ArrayObject($context));
         $this->topic->publish($topic, new ArrayObject($context));
-        $this->topic->publish('Form-delete', new ArrayObject($context));
-        if (isset($formObject->bundle) && !empty($formObject->bundle)) {
-            $this->topic->publish($formObject->bundle . '-Form-delete', new ArrayObject($context));
-        }
         if (isset($formObject->topicDelete) && !empty($formObject->topicDelete)) {
             $this->topic->publish($formObject->topicDelete, new ArrayObject($context));
         }
         if ($this->post->statusCheck() == 'deleted') {
-            $topic = $formObject->marker . '-deleted';
-            $this->topic->publish('Form-deleted', new ArrayObject($context));
-            if (isset($formObject->bundle) && !empty($formObject->bundle)) {
-                $this->topic->publish($formObject->bundle . '-Form-deleted', new ArrayObject($context));
-            }
+            $topic = 'FORM:DELETED';
+            $this->topic->publish($topic, new ArrayObject($context));
+            $this->topic->publish($topic . ':' . $formObject->slug, new ArrayObject($context));
             if (isset($formObject->topicDeleted) && !empty($formObject->topicDeleted)) {
                 $this->topic->publish($formObject->topicDeleted, new ArrayObject($context));
             }
-            $this->topic->publish($topic, new ArrayObject($context));
             return $this->responseSuccess($formObject);
         } else {
             return $this->responseError();
