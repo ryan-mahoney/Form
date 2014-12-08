@@ -107,9 +107,13 @@ class Service {
 
     public function factory ($formName, $dbURI=false) {
         $formObject = new stdClass();
-        $form = $this->formModel->cacheGetForm($formName);
-        if ($form === false) {
-            throw new Exception('Can not get: ' . $formName . ' from cache');
+        if (!is_array($formName)) {
+            $form = $this->formModel->cacheGetForm($formName);
+            if ($form === false) {
+                throw new Exception('Can not get: ' . $formName . ' from cache');
+            }
+        } else {
+            $form = $formName;
         }
         foreach ($form as $key => $value) {
             $formObject->{$key} = $value;
@@ -147,9 +151,9 @@ class Service {
             }
             if (isset($formObject->document[$field['name']])) {
                 $field['data'] = $formObject->document[$field['name']];
-                if (isset($field['transformOut'])) {
-                    $field['data'] = $this->route->serviceMethod($field['transformOut'], $field['data'], $formObject);
-                }
+                //if (isset($field['transformOut'])) {
+                //    $field['data'] = $this->route->serviceMethod($field['transformOut'], $field['data'], $formObject);
+                //}
             } else {
                 if (isset($field['default'])) {
                     if (substr_count($field['default'], '@') == 1) {
@@ -197,7 +201,7 @@ class Service {
             if (!isset($formPost[$field['name']])) {
                 continue;
             }
-            $formPost[$field['name']] = $this->route->serviceMethod($field['transformIn'], $field, $formObject, $formPost);
+            //$formPost[$field['name']] = $this->route->serviceMethod($field['transformIn'], $field, $formObject, $formPost);
         }
     }
 
@@ -302,8 +306,7 @@ class Service {
         echo $this->form->json($formObject, $id);
     }
 
-    public function upsert ($form, $id=false) {
-        $formObject = $this->factory($form, $id);
+    public function upsert ($formObject, $id=false) {
         if ($id === false) {
             $formPost = $this->post->get($formObject->slug);
             if (isset($formPost['id'])) {
@@ -317,10 +320,10 @@ class Service {
             'formMarker' => $formObject->slug,
             'formObject' => $formObject
         ];
-        if (!$this->validate($formObject)) {
-            return $this->responseError();
-        }
-        $this->sanitize($formObject);
+        //if (!$this->validate($formObject)) {
+        //    return $this->responseError();
+        //}
+        //$this->sanitize($formObject);
         $topic = 'FORM:SAVE';
         $this->topic->publish($topic . ':' . $formObject->slug, new ArrayObject($context));
         $this->topic->publish($topic, new ArrayObject($context));

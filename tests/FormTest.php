@@ -109,13 +109,13 @@ class FormTest extends PHPUnit_Framework_TestCase {
     }
 
     public function testFormSubmitError () {
-        $response = json_decode($this->form->upsert('contact', $this->contactId), true);
+        $response = json_decode($this->form->upsert($this->form->factory('contact'), $this->contactId), true);
         $this->assertTrue($response['success'] === false);
     }
 
     public function testFormSubmitFail () {
         $this->post->populate(['contact' => $this->contactPost]);
-        $response = json_decode($this->form->upsert('contact', $this->contactId), true);
+        $response = json_decode($this->form->upsert($this->form->factory('contact'), $this->contactId), true);
         $this->assertTrue($response['success'] === false);
     }
 
@@ -127,7 +127,7 @@ class FormTest extends PHPUnit_Framework_TestCase {
                 ['form-token' => $this->form->tokenHashGet(new stdClass())]
             )]
         );
-        $response = json_decode($this->form->upsert('contact', $this->contactId), true);
+        $response = json_decode($this->form->upsert($this->form->factory('contact'), $this->contactId), true);
         $this->assertTrue($response['success'] === true);
     }
 
@@ -162,7 +162,7 @@ class FormTest extends PHPUnit_Framework_TestCase {
                 ['form-token' => $this->form->tokenHashGet(new stdClass())]
             )
         ]);
-        $response = json_decode($this->route->run('POST', '/api/form/contact/' . $this->contactId), true);
+        $response = json_decode($this->route->run('POST', '/api/form/contact/' . (string)$this->contactId), true);
         $this->assertTrue($response['success'] == true);
     }
 }

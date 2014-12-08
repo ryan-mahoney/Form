@@ -36,11 +36,14 @@ class Controller {
 	}
 
     public function update ($form, $dbURI=false) {
-        echo $this->service->upsert($form, $dbURI);
+        $formObject = $this->service->factory($form);
+        echo $this->service->upsert($formObject, $dbURI);
     }
 
     public function bundleUpdate ($bundle, $form, $dbURI=false) {
-        echo $this->service->upsert($bundle . '__' . $form, $dbURI);
+        //attach bundle topics?
+        $formObject = $this->service->factory($form);
+        echo $this->service->upsert($formObject, $dbURI);
     }
 
     public function delete ($form, $dbURI) {
@@ -63,14 +66,14 @@ class Controller {
         if (isset($_GET['id']) && $id === false) {
             $id = $_GET['id'];
         }
-        echo $this->jsonDecorate($this->service->json($this->service->factory($form, $id), $id));
+        echo $this->jsonDecorate($this->service->json($this->service->factory($form), $id));
     }
 
     public function jsonBundle ($bundle, $form, $id=false) {
         if (isset($_GET['id']) && $id === false) {
             $id = $_GET['id'];
         }
-        echo $this->jsonDecorate($this->service->json($this->service->factory($bundle . '__' . $form, $id), $id));
+        echo $this->jsonDecorate($this->service->json($this->service->factory($form), $id));
     }
 
     private function jsonDecorate ($json) {
