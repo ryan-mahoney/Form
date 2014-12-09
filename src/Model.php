@@ -67,20 +67,26 @@ class Model {
 
     private function directoryScan ($path, &$forms, $bundle='') {
         $separator = '';
-        $separator2 = '';
         if (strlen($bundle) > 0) {
             $separator = '/';
-            $separator2 = '__';
         }
         $dirFiles = glob($path);
-        foreach ($dirFiles as $form) {
-            $form = $this->yaml($form);
+        foreach ($dirFiles as $formPath) {
+            $form = $this->yaml($formPath);
             $form = $form['form'];
+            if (!isset($form['slug'])) {
+                echo 'malformatted form: ', $formPath, ', no slug', "\n";
+                continue;
+            }
+            if (!isset($form['fields']) || !is_array($form['fields'])) {
+                echo 'malformatted form: ', $formPath, ', no field', "\n";
+                continue;
+            }
             foreach ($form['fields'] as $key => &$value) {
                 $value['name'] = $key;
                 $value['marker'] = $form['slug'];
             }
-            $forms[$form['slug'] . $separator2 . $bundle] = array_merge($form, [
+            $forms[$form['slug']] = array_merge($form, [
                 'bundle'    => $bundle,
                 'name'      => $form['slug'],
                 'layout'    => $this->root . '/layouts/' . $bundle . $separator . 'forms/' . $form['slug'] . '.html',

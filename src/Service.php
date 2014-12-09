@@ -151,12 +151,12 @@ class Service {
             }
             if (isset($formObject->document[$field['name']])) {
                 $field['data'] = $formObject->document[$field['name']];
-                //if (isset($field['transformOut'])) {
-                //    $field['data'] = $this->route->serviceMethod($field['transformOut'], $field['data'], $formObject);
-                //}
+                if (isset($field['transformOut']) && substr_count($field['transformOut'], '@') == 1) {
+                    $field['data'] = $this->route->serviceMethod($field['transformOut'], $formObject->document[$field['name']], $formObject);
+                }
             } else {
                 if (isset($field['default'])) {
-                    if (substr_count($field['default'], '@') == 1) {
+                    if (substr_count($field['default'], '@') == 1 && substr_count($field['default'], '\@') != 1) {
                         $field['data'] = $this->route->serviceMethod($field['default'], $field, $formObject);
                     } else {
                         $field['data'] = $default;
@@ -195,13 +195,13 @@ class Service {
             throw new Exception('form not in post');
         }
         foreach ($formObject->fields as $field) {
-            if (!isset($field['transformIn'])) {
+            if (!isset($field['transformIn']) || substr_count($field['transformIn'], '@') != 1) {
                 continue;
             }
             if (!isset($formPost[$field['name']])) {
                 continue;
             }
-            //$formPost[$field['name']] = $this->route->serviceMethod($field['transformIn'], $field, $formObject, $formPost);
+            $this->post->set([$formObject->slug, $field['name']], $this->route->serviceMethod($field['transformIn'], $formPost[$field['name']], $formObject, $formPost));
         }
     }
 
@@ -320,10 +320,10 @@ class Service {
             'formMarker' => $formObject->slug,
             'formObject' => $formObject
         ];
-        //if (!$this->validate($formObject)) {
-        //    return $this->responseError();
-        //}
-        //$this->sanitize($formObject);
+        if (!$this->validate($formObject)) {
+            return $this->responseError();
+        }
+        $this->sanitize($formObject);
         $topic = 'FORM:SAVE';
         $this->topic->publish($topic . ':' . $formObject->slug, new ArrayObject($context));
         $this->topic->publish($topic, new ArrayObject($context));
