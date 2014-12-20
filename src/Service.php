@@ -107,13 +107,14 @@ class Service {
 
     public function factory ($formName, $dbURI=false) {
         $formObject = new stdClass();
-        if (!is_array($formName)) {
-            $form = $this->formModel->cacheGetForm($formName);
-            if ($form === false) {
-                throw new Exception('Can not get: ' . $formName . ' from cache');
-            }
-        } else {
+        if (is_array($formName)) {
             $form = $formName;
+        }
+        if (is_string($formName)) {
+            $form = $this->formModel->cacheGetForm($formName);
+        }
+        if (!is_array($form)) {
+            throw new Exception('Can not get: ' . $formName . ' from cache');
         }
         foreach ($form as $key => $value) {
             $formObject->{$key} = $value;
@@ -131,8 +132,8 @@ class Service {
                 $formObject->id = $formObject->storage['collection'] . ':' . new MongoId();
             } elseif (property_exists($formObject, 'collection')) {
                 $collection = $formObject->collection;
-                $collection = $this->collection->factory(new $collection());
-                $formObject->id = $collection->collection . ':' . new MongoId();
+                $collection = $this->collection->factory($collection);
+                $formObject->id = $collection->collection() . ':' . new MongoId();
             } else {
                 $formObject->id = '';
             }
@@ -143,27 +144,62 @@ class Service {
         return $formObject;
     }
 
+    private function fieldData (&$field, &$formObject) {
+        if (!isset($field['data'])) {
+            $field['data'] = NULL;
+        }
+        if (!property_exists($formObject, 'document')) {
+            return;
+        }
+        if (isset($formObject->document[$field['name']])) {
+            $field['data'] = $formObject->document[$field['name']];
+        }
+    }
+
+    private function fieldTransformOut (&$field, &$formObject) {
+        if (isset($field['transformOut']) && substr_count($field['transformOut'], '@') == 1) {
+            $field['data'] = $this->route->serviceMethod($field['transformOut'], $field['data'], $formObject);
+        }
+    }
+
+    private function fieldDefault (&$field, &$formObject) {
+        if ($field['data'] !== NULL) {
+            return;
+        }
+        if (!isset($field['default'])) {
+            return;
+        }
+        if (substr_count($field['default'], '@') == 1 && substr_count($field['default'], '\@') != 1) {
+            $field['data'] = $this->route->serviceMethod($field['default'], $field, $formObject);
+            return;
+        }
+        $field['data'] = str_replace('\@', '@', $default);
+    }
+
+    private function fieldRender (&$field, &$formObject, &$out) {
+        $document = [];
+        if (property_exists($formObject, 'document')) {
+            $document = $formObject->document;
+        }
+        if (substr_count($field['display'], '@') != 1) {
+            throw new Exception($field['name'] . ': missing @ from display service@method call: ' . $field['display']);
+        }
+        $out[$field['name']] = $this->route->serviceMethod($field['display'], $field, $document, $formObject);
+    }
+
     public function json ($formObject) {
         $out = [];
+        if (!property_exists($formObject, 'fields')) {
+            throw new Exception('Form object has no fields');
+        }
         foreach ($formObject->fields as $field) {
             if (!isset($field['display'])) {
                 continue;
             }
-            if (isset($formObject->document[$field['name']])) {
-                $field['data'] = $formObject->document[$field['name']];
-                if (isset($field['transformOut']) && substr_count($field['transformOut'], '@') == 1) {
-                    $field['data'] = $this->route->serviceMethod($field['transformOut'], $formObject->document[$field['name']], $formObject);
-                }
-            } else {
-                if (isset($field['default'])) {
-                    if (substr_count($field['default'], '@') == 1 && substr_count($field['default'], '\@') != 1) {
-                        $field['data'] = $this->route->serviceMethod($field['default'], $field, $formObject);
-                    } else {
-                        $field['data'] = $default;
-                    }
-                }
-            }
-            $out[$field['name']] = $this->route->serviceMethod($field['display'], $field, $formObject->document, $formObject);
+            $this->fieldData($field, $formObject);
+            $this->fieldTransformOut($field, $formObject);
+            $this->fieldDefault($field, $formObject);
+            $this->fieldRender($field, $formObject, $out);
         }
         if (isset($formObject->document['modified_date'])) {
             $out['modified_date'] = self::date($formObject->document['modified_date']);

@@ -99,10 +99,6 @@ class Model {
         return true;
     }
 
-    private function toUnderscore ($value) {
-        return strtolower(preg_replace('/([a-z])([A-Z])/', '$1_$2', $value));
-    }
-
     public function build () {
         $forms = [];
         $this->directoryScan($this->root . '/../config/forms/*.yml', $forms);

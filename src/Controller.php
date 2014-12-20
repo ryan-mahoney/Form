@@ -66,7 +66,9 @@ class Controller {
         if (isset($_GET['id']) && $id === false) {
             $id = $_GET['id'];
         }
-        echo $this->jsonDecorate($this->service->json($this->service->factory($form), $id));
+        $formObject = $this->service->factory($form);
+        $json = $this->service->json($formObject, $id);
+        echo $this->jsonDecorate($json);
     }
 
     public function jsonBundle ($bundle, $form, $id=false) {
@@ -89,20 +91,22 @@ class Controller {
         return $head . $json . $tail;
     }
 
-    public function html ($form, $dbURI=false) {
+    public function html ($slug, $dbURI=false) {
         $this->view->html(
-            $this->service->factory($form),
-            'forms/' . $form,
-            'forms/' . $form,
+            $this->service->factory($slug),
+            'forms/' . $slug,
+            'forms/' . $slug,
             $dbURI
         );
     }
 
-    public function bundleHtml ($bundle, $form, $dbURI=false) {
+    public function bundleHtml ($bundle, $slug, $dbURI=false) {
+        echo 'Hello';
+        exit;
         $this->view->html(
-            $this->service->factory($bundle . '__' . $form),
-            [strtolower($bundle) . '/forms/' . $form . '.yml', $bundle . '/forms/' . $form . '.yml'],
-            [strtolower($bundle) . '/forms/' . $form . '.html', $bundle . '/forms/' . $form . '.html'],
+            $this->service->factory($slug),
+            [strtolower($bundle) . '/forms/' . $slug . '.yml', $bundle . '/forms/' . $slug . '.yml'],
+            [strtolower($bundle) . '/forms/' . $slug . '.html', $bundle . '/forms/' . $slug . '.html'],
             $dbURI
         );
     }
