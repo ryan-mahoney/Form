@@ -26,14 +26,17 @@ namespace Opine\Form;
 
 use Opine\Interfaces\Route as RouteInterface;
 
-class Route {
-	private $route;
+class Route
+{
+    private $route;
 
-	public function __construct (RouteInterface $route) {
-		$this->route = $route;
-	}
+    public function __construct(RouteInterface $route)
+    {
+        $this->route = $route;
+    }
 
-	public function paths () {
+    public function paths()
+    {
         //api routes
         $this->route->get('/api/form/{form}', 'formController@json');
         $this->route->get('/api/form/{form}/{id}', 'formController@json');

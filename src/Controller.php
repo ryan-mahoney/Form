@@ -24,29 +24,34 @@
  */
 namespace Opine\Form;
 
-class Controller {
-	private $service;
-	private $view;
-	private $model;
+class Controller
+{
+    private $service;
+    private $view;
+    private $model;
 
-	public function __construct ($model, $view, $service) {
-		$this->model = $model;
-		$this->view = $view;
-		$this->service = $service;
-	}
+    public function __construct($model, $view, $service)
+    {
+        $this->model = $model;
+        $this->view = $view;
+        $this->service = $service;
+    }
 
-    public function update ($form, $dbURI=false) {
+    public function update($form, $dbURI = false)
+    {
         $formObject = $this->service->factory($form);
         echo $this->service->upsert($formObject, $dbURI);
     }
 
-    public function bundleUpdate ($bundle, $form, $dbURI=false) {
+    public function bundleUpdate($bundle, $form, $dbURI = false)
+    {
         //attach bundle topics?
         $formObject = $this->service->factory($form);
         echo $this->service->upsert($formObject, $dbURI);
     }
 
-    public function delete ($form, $dbURI) {
+    public function delete($form, $dbURI)
+    {
         $token = false;
         if (isset($_GET['form-token'])) {
             $token = $_GET['form-token'];
@@ -54,15 +59,17 @@ class Controller {
         echo $this->service->delete($form, $dbURI, $token);
     }
 
-    public function bundleDelete ($bundle, $form, $dbURI) {
+    public function bundleDelete($bundle, $form, $dbURI)
+    {
         $token = false;
         if (isset($_GET['form-token'])) {
             $token = $_GET['form-token'];
         }
-        echo $this->service->delete($bundle . '__' . $form, $dbURI, $token);
+        echo $this->service->delete($bundle.'__'.$form, $dbURI, $token);
     }
 
-    public function json ($form, $id=false) {
+    public function json($form, $id = false)
+    {
         if (isset($_GET['id']) && $id === false) {
             $id = $_GET['id'];
         }
@@ -71,42 +78,47 @@ class Controller {
         echo $this->jsonDecorate($json);
     }
 
-    public function jsonBundle ($bundle, $form, $id=false) {
+    public function jsonBundle($bundle, $form, $id = false)
+    {
         if (isset($_GET['id']) && $id === false) {
             $id = $_GET['id'];
         }
         echo $this->jsonDecorate($this->service->json($this->service->factory($form), $id));
     }
 
-    private function jsonDecorate ($json) {
+    private function jsonDecorate($json)
+    {
         $head = '';
         $tail = '';
         if (isset($_GET['pretty'])) {
             $head = '<html><head></head><body style="margin:0; border:0; padding: 0"><textarea wrap="off" style="overflow: auto; margin:0; border:0; padding: 0; width:100%; height: 100%">';
             $tail = '</textarea></body></html>';
         } elseif (isset($_GET['callback'])) {
-            $head = $_GET['callback'] . '(';
+            $head = $_GET['callback'].'(';
             $tail = ');';
         }
-        return $head . $json . $tail;
+
+        return $head.$json.$tail;
     }
 
-    public function html ($slug, $dbURI=false) {
+    public function html($slug, $dbURI = false)
+    {
         $this->view->html(
             $this->service->factory($slug),
-            'forms/' . $slug,
-            'forms/' . $slug,
+            'forms/'.$slug,
+            'forms/'.$slug,
             $dbURI
         );
     }
 
-    public function bundleHtml ($bundle, $slug, $dbURI=false) {
+    public function bundleHtml($bundle, $slug, $dbURI = false)
+    {
         echo 'Hello';
         exit;
         $this->view->html(
             $this->service->factory($slug),
-            [strtolower($bundle) . '/forms/' . $slug . '.yml', $bundle . '/forms/' . $slug . '.yml'],
-            [strtolower($bundle) . '/forms/' . $slug . '.html', $bundle . '/forms/' . $slug . '.html'],
+            [strtolower($bundle).'/forms/'.$slug.'.yml', $bundle.'/forms/'.$slug.'.yml'],
+            [strtolower($bundle).'/forms/'.$slug.'.html', $bundle.'/forms/'.$slug.'.html'],
             $dbURI
         );
     }

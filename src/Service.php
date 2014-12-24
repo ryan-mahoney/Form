@@ -26,14 +26,14 @@ namespace Opine\Form;
 
 use ArrayObject;
 use MongoId;
-use ReflectionClass;
 use Exception;
 use stdClass;
 use Opine\Interfaces\Topic as TopicInterface;
 use Opine\Interfaces\DB as DBInterface;
 use Opine\Interfaces\Route as RouteInterface;
 
-class Service {
+class Service
+{
     private $root;
     private $route;
     private $post;
@@ -43,7 +43,8 @@ class Service {
     private $topic;
     private $collection;
 
-    public function __construct ($root, $formModel, RouteInterface $route, $post, DBInterface $db, $collection, TopicInterface $topic) {
+    public function __construct($root, $formModel, RouteInterface $route, $post, DBInterface $db, $collection, TopicInterface $topic)
+    {
         $this->root = $root;
         $this->route = $route;
         $this->post = $post;
@@ -54,28 +55,34 @@ class Service {
         $this->collection = $collection;
     }
 
-    public function tokenHashGet ($formObject) {
-        return md5($this->root . session_id() . get_class($formObject));
+    public function tokenHashGet($formObject)
+    {
+        return md5($this->root.session_id().get_class($formObject));
     }
 
-    private function tokenHashMatch (Array $input, $formObject) {
+    private function tokenHashMatch(Array $input, $formObject)
+    {
         if (!isset($input['form-token'])) {
             return false;
         }
         if ($input['form-token'] != $this->tokenHashGet($formObject)) {
             return false;
         }
+
         return true;
     }
 
-    public function stored ($form) {
+    public function stored($form)
+    {
         if (!isset($this->formStorage[$form])) {
             return false;
         }
+
         return $this->formStorage[$form];
     }
 
-    public function after ($form, $mode, $data) {
+    public function after($form, $mode, $data)
+    {
         $form = $this->stored($form);
         if ($form === false) {
             return false;
@@ -105,7 +112,8 @@ class Service {
         }
     }
 
-    public function factory ($formName, $dbURI=false) {
+    public function factory($formName, $dbURI = false)
+    {
         $formObject = new stdClass();
         if (is_array($formName)) {
             $form = $formName;
@@ -114,7 +122,7 @@ class Service {
             $form = $this->formModel->cacheGetForm($formName);
         }
         if (!is_array($form)) {
-            throw new Exception('Can not get: ' . $formName . ' from cache');
+            throw new Exception('Can not get: '.$formName.' from cache');
         }
         foreach ($form as $key => $value) {
             $formObject->{$key} = $value;
@@ -129,11 +137,11 @@ class Service {
         }
         if ($dbURI === false) {
             if (property_exists($formObject, 'storage')) {
-                $formObject->id = $formObject->storage['collection'] . ':' . new MongoId();
+                $formObject->id = $formObject->storage['collection'].':'.new MongoId();
             } elseif (property_exists($formObject, 'collection')) {
                 $collection = $formObject->collection;
                 $collection = $this->collection->factory($collection);
-                $formObject->id = $collection->collection() . ':' . new MongoId();
+                $formObject->id = $collection->collection().':'.new MongoId();
             } else {
                 $formObject->id = '';
             }
@@ -141,12 +149,14 @@ class Service {
             $formObject->id = $dbURI;
         }
         $this->formStorage[$formObject->slug] = $formObject;
+
         return $formObject;
     }
 
-    private function fieldData (&$field, &$formObject) {
+    private function fieldData(&$field, &$formObject)
+    {
         if (!isset($field['data'])) {
-            $field['data'] = NULL;
+            $field['data'] = null;
         }
         if (!property_exists($formObject, 'document')) {
             return;
@@ -156,14 +166,16 @@ class Service {
         }
     }
 
-    private function fieldTransformOut (&$field, &$formObject) {
+    private function fieldTransformOut(&$field, &$formObject)
+    {
         if (isset($field['transformOut']) && substr_count($field['transformOut'], '@') == 1) {
             $field['data'] = $this->route->serviceMethod($field['transformOut'], $field['data'], $formObject);
         }
     }
 
-    private function fieldDefault (&$field, &$formObject) {
-        if ($field['data'] !== NULL) {
+    private function fieldDefault(&$field, &$formObject)
+    {
+        if ($field['data'] !== null) {
             return;
         }
         if (!isset($field['default'])) {
@@ -171,23 +183,26 @@ class Service {
         }
         if (substr_count($field['default'], '@') == 1 && substr_count($field['default'], '\@') != 1) {
             $field['data'] = $this->route->serviceMethod($field['default'], $field, $formObject);
+
             return;
         }
         $field['data'] = str_replace('\@', '@', $default);
     }
 
-    private function fieldRender (&$field, &$formObject, &$out) {
+    private function fieldRender(&$field, &$formObject, &$out)
+    {
         $document = [];
         if (property_exists($formObject, 'document')) {
             $document = $formObject->document;
         }
         if (substr_count($field['display'], '@') != 1) {
-            throw new Exception($field['name'] . ': missing @ from display service@method call: ' . $field['display']);
+            throw new Exception($field['name'].': missing @ from display service@method call: '.$field['display']);
         }
         $out[$field['name']] = $this->route->serviceMethod($field['display'], $field, $document, $formObject);
     }
 
-    public function json ($formObject) {
+    public function json($formObject)
+    {
         $out = [];
         if (!property_exists($formObject, 'fields')) {
             throw new Exception('Form object has no fields');
@@ -207,14 +222,16 @@ class Service {
         if (isset($formObject->document['created_date'])) {
             $out['created_date'] = self::date($formObject->document['created_date']);
         }
-        $out['id_spare'] = (string)new MongoId();
-        $out['id'] = '<input type="hidden" name="' . $formObject->slug . '[id]" value="' . (string)$formObject->id . '" />';
-        $out['form-token'] = '<input type="hidden" name="' . $formObject->slug . '[form-token]" value="' . $formObject->token . '" />';
+        $out['id_spare'] = (string) new MongoId();
+        $out['id'] = '<input type="hidden" name="'.$formObject->slug.'[id]" value="'.(string) $formObject->id.'" />';
+        $out['form-token'] = '<input type="hidden" name="'.$formObject->slug.'[form-token]" value="'.$formObject->token.'" />';
         $out['form-marker'] = $formObject->slug;
+
         return json_encode($out, JSON_PRETTY_PRINT);
     }
 
-    private static function date ($date) {
+    private static function date($date)
+    {
         if (is_object($date)) {
             $date = date('c', $date->sec);
         } elseif (empty($date)) {
@@ -222,10 +239,12 @@ class Service {
         } else {
             $date = date('c', strtotime($date));
         }
+
         return $date;
     }
 
-    public function sanitize ($formObject) {
+    public function sanitize($formObject)
+    {
         $formPost = $this->post->get($formObject->slug);
         if ($formPost === false) {
             throw new Exception('form not in post');
@@ -241,10 +260,11 @@ class Service {
         }
     }
 
-    public function validate ($formObject) {
+    public function validate($formObject)
+    {
         $passed = true;
         $formPost = $this->post->get($formObject->slug);
-        if (!$this->tokenHashMatch((array)$formPost, $formObject)) {
+        if (!$this->tokenHashMatch((array) $formPost, $formObject)) {
             $passed = false;
             $this->post->errorFieldSet($formObject->slug, 'Invalid form submission.');
         }
@@ -260,9 +280,9 @@ class Service {
                 $field['required'] = $this->route->serviceMethod($field['required'], $field, $formObject, $formPost);
             }
             if (isset($field['required']) && $field['required'] == true) {
-                if (!self::fieldValidateRequired ($field, $formPost)) {
+                if (!self::fieldValidateRequired($field, $formPost)) {
                     $passed = false;
-                    $this->post->errorFieldSet($formObject->slug, $field['label'] . ' must have a value.', $field['name']);
+                    $this->post->errorFieldSet($formObject->slug, $field['label'].' must have a value.', $field['name']);
                     continue;
                 }
             }
@@ -271,14 +291,16 @@ class Service {
                 $error = $this->route->serviceMethod($field['validate'], $field, $formObject, $formPost);
                 if ($error !== true) {
                     $passed = false;
-                    $this->post->errorFieldSet($formObject->slug, $field['label'] . ': ' . $error, $field['name']);
+                    $this->post->errorFieldSet($formObject->slug, $field['label'].': '.$error, $field['name']);
                 }
             }
         }
+
         return $passed;
     }
 
-    private static function fieldValidateRequired ($field, $formPost) {
+    private static function fieldValidateRequired($field, $formPost)
+    {
         if (isset($formPost[$field['name']])) {
             if (is_array($formPost[$field['name']])) {
                 if (count($formPost[$field['name']]) == 0) {
@@ -290,12 +312,14 @@ class Service {
         } else {
             return false;
         }
+
         return true;
     }
 
-    public function responseSuccess ($formObject) {
+    public function responseSuccess($formObject)
+    {
         $response = [
-            'success' => true
+            'success' => true,
         ];
         if (!isset($formObject->after)) {
             $formObject->after = 'notice';
@@ -319,30 +343,37 @@ class Service {
                 break;
         }
         $response = array_merge($this->post->responseFieldsGet(), $response);
+
         return json_encode($response, JSON_HEX_AMP);
     }
 
-    public function responseError () {
+    public function responseError()
+    {
         http_response_code(400);
+
         return json_encode([
             'success' => false,
-            'errors' => $this->post->errorsGet()
+            'errors' => $this->post->errorsGet(),
         ], JSON_HEX_AMP);
     }
 
-    private function formType ($form) {
+    private function formType($form)
+    {
         if (substr_count($form, 'managers/') > 0) {
             return 'Manager';
         }
+
         return 'Form';
     }
 
-    public function viewJson ($form, $id=false) {
+    public function viewJson($form, $id = false)
+    {
         $formObject = $this->form->factory($form, $id);
         echo $this->form->json($formObject, $id);
     }
 
-    public function upsert ($formObject, $id=false) {
+    public function upsert($formObject, $id = false)
+    {
         if ($id === false) {
             $formPost = $this->post->get($formObject->slug);
             if (isset($formPost['id'])) {
@@ -354,32 +385,34 @@ class Service {
         $context = [
             'dbURI' => $id,
             'formMarker' => $formObject->slug,
-            'formObject' => $formObject
+            'formObject' => $formObject,
         ];
         if (!$this->validate($formObject)) {
             return $this->responseError();
         }
         $this->sanitize($formObject);
         $topic = 'FORM:SAVE';
-        $this->topic->publish($topic . ':' . $formObject->slug, new ArrayObject($context));
+        $this->topic->publish($topic.':'.$formObject->slug, new ArrayObject($context));
         $this->topic->publish($topic, new ArrayObject($context));
         if (isset($formObject->topicSave) && !empty($formObject->topicSave)) {
             $this->topic->publish($formObject->topicSave, new ArrayObject($context));
         }
         if ($this->post->statusCheck() == 'saved') {
             $topic = 'FORM:SAVED';
-            $this->topic->publish($topic . ':' . $formObject->slug, new ArrayObject($context));
+            $this->topic->publish($topic.':'.$formObject->slug, new ArrayObject($context));
             $this->topic->publish($topic, new ArrayObject($context));
             if (isset($formObject->topicSaved) && !empty($formObject->topicSaved)) {
                 $this->topic->publish($formObject->topicSaved, new ArrayObject($context));
             }
+
             return $this->responseSuccess($formObject);
         } else {
             return $this->responseError();
         }
     }
 
-    public function delete ($form, $id, $token) {
+    public function delete($form, $id, $token)
+    {
         $formObject = $this->factory($form, $id);
         if ($id === false) {
             throw new Exception('ID not supplied in post.');
@@ -387,15 +420,16 @@ class Service {
         if (!$this->tokenHashMatch(['form-token' => $token], $formObject)) {
             $passed = false;
             $this->post->errorFieldSet($formObject->slug, 'Invalid form submission.');
+
             return $this->responseError();
         }
         $context = [
             'dbURI' => $id,
             'formMarker' => $formObject->slug,
-            'formObject' => $formObject
+            'formObject' => $formObject,
         ];
         $topic = 'FORM:DELETE';
-        $this->topic->publish($topic . ':' . $formObject->slug, new ArrayObject($context));
+        $this->topic->publish($topic.':'.$formObject->slug, new ArrayObject($context));
         $this->topic->publish($topic, new ArrayObject($context));
         if (isset($formObject->topicDelete) && !empty($formObject->topicDelete)) {
             $this->topic->publish($formObject->topicDelete, new ArrayObject($context));
@@ -403,10 +437,11 @@ class Service {
         if ($this->post->statusCheck() == 'deleted') {
             $topic = 'FORM:DELETED';
             $this->topic->publish($topic, new ArrayObject($context));
-            $this->topic->publish($topic . ':' . $formObject->slug, new ArrayObject($context));
+            $this->topic->publish($topic.':'.$formObject->slug, new ArrayObject($context));
             if (isset($formObject->topicDeleted) && !empty($formObject->topicDeleted)) {
                 $this->topic->publish($formObject->topicDeleted, new ArrayObject($context));
             }
+
             return $this->responseSuccess($formObject);
         } else {
             return $this->responseError();

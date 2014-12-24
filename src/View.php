@@ -26,20 +26,23 @@ namespace Opine\Form;
 
 use Opine\Interfaces\Layout as LayoutInterface;
 
-class View {
-	private $layout;
+class View
+{
+    private $layout;
 
-	public function __construct (LayoutInterface $layout) {
-		$this->layout = $layout;
-	}
+    public function __construct(LayoutInterface $layout)
+    {
+        $this->layout = $layout;
+    }
 
-	public function html ($formObject, $app, $layout, $id=false) {
+    public function html($formObject, $app, $layout, $id = false)
+    {
         $args = [];
         if ($id != false) {
             $args['id'] = $id;
         }
         $this->layout->
-        	config($app)->
+            config($app)->
             container($layout)->
             args($formObject->name, $args)->
             write();

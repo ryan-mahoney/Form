@@ -1,6 +1,6 @@
 imports:
  - base.yml
- 
+
 regions:
     Form__Contact:
         url: '/Sample/api/form/Contact'

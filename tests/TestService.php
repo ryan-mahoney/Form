@@ -1,14 +1,17 @@
 <?php
 namespace Opine\Form;
 
-class TestService {
+class TestService
+{
     private $post;
 
-    public function __construct ($post) {
+    public function __construct($post)
+    {
         $this->post = $post;
     }
 
-    public function fakeSubmit ($context) {
+    public function fakeSubmit($context)
+    {
         $this->post->statusSaved();
     }
 }

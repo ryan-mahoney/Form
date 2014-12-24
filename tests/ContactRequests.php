@@ -4,7 +4,8 @@
  */
 namespace Collection;
 
-class ContactRequests {
+class ContactRequests
+{
     public $publishable = true;
     public $singular = 'contact_request';
 }

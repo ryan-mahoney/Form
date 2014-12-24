@@ -26,46 +26,55 @@ namespace Opine\Form;
 
 use Symfony\Component\Yaml\Yaml;
 
-class Model {
+class Model
+{
     private $cache;
     private $root;
     private $bundleModel;
     private $cacheFile;
     private $cacheKey;
 
-    public function __construct ($root, $bundleModel) {
+    public function __construct($root, $bundleModel)
+    {
         $this->root = $root;
-        $this->cacheFile = $root . '/../var/cache/forms.json';
+        $this->cacheFile = $root.'/../var/cache/forms.json';
         $this->bundleModel = $bundleModel;
     }
 
-    public function cacheSet ($cache) {
+    public function cacheSet($cache)
+    {
         if (empty($cache)) {
             if (!file_exists($this->cacheFile)) {
                 return;
             }
             $this->cache = json_decode(file_get_contents($this->cacheFile), true);
+
             return;
         }
         $this->cache = $cache;
     }
 
-    public function cacheGetForm ($slug) {
+    public function cacheGetForm($slug)
+    {
         if (!isset($this->cache[$slug])) {
             return false;
         }
+
         return $this->cache[$slug];
     }
 
-    private function cacheWrite ($cache) {
+    private function cacheWrite($cache)
+    {
         file_put_contents($this->cacheFile, json_encode($cache, JSON_PRETTY_PRINT));
     }
 
-    private static function stubRead ($name, &$collection, $url, $root) {
+    private static function stubRead($name, &$collection, $url, $root)
+    {
         return str_replace(['{{$url}}', '{{$plural}}', '{{$singular}}'], [$url, $collection['p'], $collection['s']], $data);
     }
 
-    private function directoryScan ($path, &$forms, $bundle='') {
+    private function directoryScan($path, &$forms, $bundle = '')
+    {
         $separator = '';
         if (strlen($bundle) > 0) {
             $separator = '/';
@@ -89,34 +98,39 @@ class Model {
             $forms[$form['slug']] = array_merge($form, [
                 'bundle'    => $bundle,
                 'name'      => $form['slug'],
-                'layout'    => $this->root . '/layouts/' . $bundle . $separator . 'forms/' . $form['slug'] . '.html',
-                'partial'   => $this->root . '/partials/' . $bundle . $separator . 'forms/' . $form['slug'] . '.hbs',
+                'layout'    => $this->root.'/layouts/'.$bundle.$separator.'forms/'.$form['slug'].'.html',
+                'partial'   => $this->root.'/partials/'.$bundle.$separator.'forms/'.$form['slug'].'.hbs',
                 'app'       => ($bundle == '')
-                                ? $this->root . '/../config/layouts/forms/' . $form['slug'] . '.yml'
-                                : $this->root . '/../config/layouts/' . $bundle . $separator . '/forms/' . $form['slug'] . '.yml'
+                                ? $this->root.'/../config/layouts/forms/'.$form['slug'].'.yml'
+                                : $this->root.'/../config/layouts/'.$bundle.$separator.'/forms/'.$form['slug'].'.yml'
             ]);
         }
+
         return true;
     }
 
-    public function build () {
+    public function build()
+    {
         $forms = [];
-        $this->directoryScan($this->root . '/../config/forms/*.yml', $forms);
+        $this->directoryScan($this->root.'/../config/forms/*.yml', $forms);
         $bundles = $this->bundleModel->bundles();
         foreach ($bundles as $bundle) {
             if (!isset($bundle['root'])) {
                 continue;
             }
-            $this->directoryScan($bundle['root'] . '/../config/forms/*.yml', $forms, $bundle['name']);
+            $this->directoryScan($bundle['root'].'/../config/forms/*.yml', $forms, $bundle['name']);
         }
         $this->cacheWrite($forms);
+
         return json_encode($forms, JSON_PRETTY_PRINT);
     }
 
-    private function yaml ($file) {
+    private function yaml($file)
+    {
         if (function_exists('yaml_parse_file')) {
             return yaml_parse_file($file);
         }
+
         return Yaml::parse(file_get_contents($file));
     }
 }

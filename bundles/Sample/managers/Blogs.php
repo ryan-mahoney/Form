@@ -11,7 +11,8 @@
  */
 namespace Sample\Manager;
 
-class Blogs {
+class Blogs
+{
     public $collection = 'blogs';
     public $title = 'Blogs';
     public $titleField = 'title';
@@ -26,10 +27,11 @@ class Blogs {
     public $function = 'ManagerSaved';
     public $storage = [
         'collection' => 'blogs',
-        'key' => '_id'
+        'key' => '_id',
     ];
-    
-    function titleField () {
+
+    public function titleField()
+    {
         return [
             'name'        => 'title',
             'label'        => 'Title',
@@ -38,14 +40,16 @@ class Blogs {
         ];
     }
 
-    function bodyField () {
+    public function bodyField()
+    {
         return [
             'display' => 'Ckeditor',
             'name' => 'body'
         ];
     }
 
-    function descriptionField () {
+    public function descriptionField()
+    {
         return [
             'name' => 'description',
             'label' => 'Summary',
@@ -53,7 +57,8 @@ class Blogs {
         ];
     }
 
-    function imageField () {
+    public function imageField()
+    {
         return [
             'name' => 'image',
             'label' => 'List View',
@@ -61,7 +66,8 @@ class Blogs {
         ];
     }
 
-    function imageFeaturedField () {
+    public function imageFeaturedField()
+    {
         return [
             'name' => 'image_feature',
             'label' => 'Featured View',
@@ -69,13 +75,14 @@ class Blogs {
         ];
     }
 
-    function statusField () {
+    public function statusField()
+    {
         return [
             'name'        => 'status',
             'required'    => true,
             'options'    => array(
                 'published'    => 'Published',
-                'draft'        => 'Draft'
+                'draft'        => 'Draft',
             ),
             'display'    => 'Select',
             'nullable'    => false,
@@ -83,21 +90,23 @@ class Blogs {
         ];
     }
 
-    function featuredField () {
+    public function featuredField()
+    {
         return [
             'name' => 'featured',
             'label' => 'Feature',
             'required' => false,
             'options' => array(
                 't' => 'Yes',
-                'f' => 'No'
+                'f' => 'No',
             ),
             'display' => 'InputSlider',
             'default' => 'f'
         ];
     }
 
-    function authorField () {
+    public function authorField()
+    {
         return [
             'name'        => 'author',
             'label'        => 'Author',
@@ -106,7 +115,8 @@ class Blogs {
         ];
     }
 
-    function publication_nameField () {
+    public function publication_nameField()
+    {
         return [
             'name'        => 'publication_name',
             'label'        => 'Publication',
@@ -114,8 +124,9 @@ class Blogs {
             'display'    => 'InputText'
         ];
     }
-    
-    function linkField () {
+
+    public function linkField()
+    {
         return [
             'name'        => 'link',
             'label'        => 'URL',
@@ -123,8 +134,9 @@ class Blogs {
             'display'    => 'InputText'
         ];
     }
-    
-    function date_publishedField() {
+
+    public function date_publishedField()
+    {
         return [
             'name'            => 'date_published',
             'label'            => 'Date Published',
@@ -142,35 +154,38 @@ class Blogs {
         ];
     }
 
-    function commentsField () {
+    public function commentsField()
+    {
         return [
             'name' => 'comments',
             'label' => 'Comments',
             'required' => false,
             'options' => array(
                 't' => 'Yes',
-                'f' => 'No'
+                'f' => 'No',
             ),
             'display' => 'InputSlider',
             'default' => 'f'
         ];
     }
 
-    function pinnedField () {
+    public function pinnedField()
+    {
         return [
             'name' => 'pinned',
             'label' => 'Pin',
             'required' => false,
             'options' => array(
                 't' => 'Yes',
-                'f' => 'No'
+                'f' => 'No',
             ),
             'display' => 'InputSlider',
             'default' => 'f'
         ];
     }
 
-    function dateField() {
+    public function dateField()
+    {
         return [
             'name'            => 'display_date',
             'required'        => true,
@@ -187,14 +202,16 @@ class Blogs {
         ];
     }
 
-     function code_nameField () {
+    public function code_nameField()
+    {
         return [
             'name' => 'code_name',
             'display'    => 'InputText'
         ];
     }
 
-    function tagsField () {
+    public function tagsField()
+    {
         return [
             'name' => 'tags',
             'label' => 'Tags',
@@ -203,6 +220,7 @@ class Blogs {
                 if (is_array($data)) {
                     return $data;
                 }
+
                 return $this->field->csvToArray($data);
             },
             'display' => 'InputToTags',
@@ -213,7 +231,8 @@ class Blogs {
         ];
     }
 
-    function categoriesField () {
+    public function categoriesField()
+    {
         return array(
             'name'        => 'categories',
             'label'        => 'Category',
@@ -223,16 +242,17 @@ class Blogs {
                     $this->db->collection('categories')->
                         find(['section' => 'Blog'])->
                         sort(['title' => 1]),
-                    '_id', 
+                    '_id',
                     'title');
             },
             'display'    => 'InputToTags',
             'controlled' => true,
-            'multiple' => true
+            'multiple' => true,
         );
     }
 
-    function authorsField () {
+    public function authorsField()
+    {
         return array(
             'name'        => 'authors',
             'label'        => 'Authors',
@@ -242,30 +262,33 @@ class Blogs {
                     $this->db->collection('profiles')->
                         find()->
                         sort(['first_name' => 1]),
-                    '_id', 
+                    '_id',
                     'title');
             },
             'display'    => 'InputToTags',
             'controlled' => true,
-            'multiple' => true
+            'multiple' => true,
         );
     }
 
-    function metakeywordsField () {
+    public function metakeywordsField()
+    {
         return [
             'name' => 'metadata_keywords',
             'display'    => 'InputText'
         ];
     }
 
-    function metadescriptionField () {
+    public function metadescriptionField()
+    {
         return [
             'name' => 'metadata_description',
             'display'    => 'InputText'
         ];
     }
 
-    public function tablePartial () {
+    public function tablePartial()
+    {
         $partial = <<<'HBS'
             <div class="top-container">
                 {{#CollectionHeader}}{{/CollectionHeader}}
@@ -275,7 +298,7 @@ class Blogs {
               {{#if blogs}}
                     {{#CollectionPagination}}{{/CollectionPagination}}
                     {{#CollectionButtons}}{{/CollectionButtons}}
-                
+
                     <table class="ui large table segment manager sortable">
                         <col width="45%">
                         <col width="25%">
@@ -313,10 +336,12 @@ class Blogs {
               {{/if}}
            </div>
 HBS;
+
         return $partial;
     }
 
-    public function formPartial () {
+    public function formPartial()
+    {
         $partial = <<<'HBS'
             {{#Form}}{{/Form}}
                 <div class="top-container">
@@ -331,8 +356,8 @@ HBS;
                             {{#FieldLeft body Body}}{{/FieldLeft}}
                             {{#FieldLeft description Summary}}{{/FieldLeft}}
                             {{{id}}}
-                        {{/DocumentFormLeft}}                 
-                        
+                        {{/DocumentFormLeft}}
+
                         {{#DocumentFormRight}}
                             {{#DocumentButton}}{{/DocumentButton}}
                             {{#FieldFull status}}{{/FieldFull}}
@@ -355,8 +380,8 @@ HBS;
                         {{#DocumentFormLeft}}
                             {{#FieldLeft image "List View"}}{{/FieldLeft}}
                             {{#FieldLeft image_feature Featured}}{{/FieldLeft}}
-                        {{/DocumentFormLeft}}                 
-                        
+                        {{/DocumentFormLeft}}
+
                         {{#DocumentFormRight}}
                             {{#DocumentButton}}{{/DocumentButton}}
                         {{/DocumentFormRight}}
@@ -368,7 +393,7 @@ HBS;
                               {{#FieldLeft link URL}}{{/FieldLeft}}
                               {{#FieldLeft date_published Date Published}}{{/FieldLeft}}
                         {{/DocumentFormLeft}}
-                        
+
                         {{#DocumentFormRight}}
                             {{#DocumentButton}}{{/DocumentButton}}
                         {{/DocumentFormRight}}
@@ -379,14 +404,15 @@ HBS;
                             {{#FieldLeft metadata_description Description}}{{/FieldLeft}}
                               {{#FieldLeft metadata_keywords Keywords}}{{/FieldLeft}}
                         {{/DocumentFormLeft}}
-                        
+
                         {{#DocumentFormRight}}
                             {{#DocumentButton}}{{/DocumentButton}}
                         {{/DocumentFormRight}}
-                    </div>            
+                    </div>
                 </div>
             </form>
 HBS;
+
         return $partial;
     }
-}    
+}
