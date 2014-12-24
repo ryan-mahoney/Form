@@ -28,7 +28,7 @@
         "opine/config"    : "3.0.0",
         "opine/db"        : "dev-master",
         "opine/route"     : "3.0.1",
-        "opine/bundle"    : "dev-master",
+        "opine/bundle"    : "1.9.0",
         "opine/cache"     : "2.0.2"
     },
     "require-dev": {
