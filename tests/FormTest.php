@@ -28,7 +28,7 @@ class FormTest extends PHPUnit_Framework_TestCase {
         $this->root = __DIR__ . '/../public';
         $config = new Config($this->root);
         $config->cacheSet();
-        $container = Container::instance($this->root, $config, $this->root . '/../config/container.yml');
+        $container = Container::instance($this->root, $config, $this->root . '/../config/containers/test-container.yml');
         $this->db = $container->get('db');
         $this->formRoute = $container->get('formRoute');
         $this->formController = $container->get('formController');
