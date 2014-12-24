@@ -28,11 +28,11 @@
         "opine/pubsub"    : "dev-master",
         "opine/container" : "dev-master",
         "opine/collection": "dev-master",
-        "opine/config"    : "dev-master",
+        "opine/config"    : "3.0.0",
         "opine/db"        : "dev-master",
         "opine/route"     : "3.0.1",
         "opine/bundle"    : "dev-master",
-        "opine/cache"     : "dev-master"
+        "opine/cache"     : "2.0.2"
     },
     "autoload": {
         "psr-4": {
