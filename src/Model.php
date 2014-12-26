@@ -127,10 +127,6 @@ class Model
 
     private function yaml($file)
     {
-        if (function_exists('yaml_parse_file')) {
-            return yaml_parse_file($file);
-        }
-
         return Yaml::parse(file_get_contents($file));
     }
 }

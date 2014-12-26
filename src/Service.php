@@ -183,10 +183,9 @@ class Service
         }
         if (substr_count($field['default'], '@') == 1 && substr_count($field['default'], '\@') != 1) {
             $field['data'] = $this->route->serviceMethod($field['default'], $field, $formObject);
-
             return;
         }
-        $field['data'] = str_replace('\@', '@', $default);
+        $field['data'] = str_replace('\@', '@', $field['default']);
     }
 
     private function fieldRender(&$field, &$formObject, &$out)
